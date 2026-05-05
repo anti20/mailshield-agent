@@ -10,12 +10,8 @@ struct StatusCardView: View {
                 .foregroundStyle(.orange)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Backend status")
+                Text("Backend status: \(status)")
                     .font(.headline)
-
-                Text(status)
-                    .font(.body)
-                    .foregroundStyle(.secondary)
             }
 
             Spacer()

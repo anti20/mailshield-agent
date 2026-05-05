@@ -13,3 +13,4 @@
 - Work is done in small commit-friendly steps
 - The first UI client is a native SwiftUI macOS menu bar app
 - The backend is intentionally not connected in the macOS skeleton step
+- Repeated Codex project instructions are stored in `AGENTS.md`

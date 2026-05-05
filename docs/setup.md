@@ -6,6 +6,10 @@ There is nothing to install yet for the backend. Step 1 adds a minimal macOS app
 
 No package manager, backend runtime, Gmail credentials, OpenAI configuration, MCP setup, or database setup exists yet.
 
+## Codex Setup
+
+Run Codex from the repository root so it can pick up the project instructions in `AGENTS.md`.
+
 ## macOS App Setup
 
 1. Open `apps/macos/MailShieldAgent.xcodeproj` in Xcode.
