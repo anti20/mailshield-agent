@@ -1,0 +1,33 @@
+# MailShield Agent
+
+MailShield Agent is a planned local-first email safety assistant for macOS. It will help review Gmail messages for suspicious content, summarize risk, and keep a local scan history.
+
+## MVP Goal
+
+The MVP goal is a macOS menu bar app that can show recent Gmail messages, request local backend scans, display threat findings, and notify the user about risky email.
+
+## High-Level Architecture
+
+MailShield Agent is planned as a small multi-part system:
+
+- A SwiftUI macOS menu bar app in `apps/macos`
+- A local TypeScript backend in `apps/core`
+- OpenAI Agents SDK workflow for analysis
+- A local MCP tool layer for controlled actions
+- Gmail API integration for email access
+- SQLite for local scan history
+
+## Current Status
+
+Step 0 complete: project structure and base documentation are in place.
+
+## Documentation
+
+- [Architecture](docs/architecture.md)
+- [Setup](docs/setup.md)
+- [Roadmap](docs/roadmap.md)
+- [Decisions](docs/decisions.md)
+
+## Future Run Instructions
+
+There is nothing to run yet. Future steps will add setup and run commands for the macOS app and the local backend.
