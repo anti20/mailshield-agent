@@ -18,6 +18,8 @@ Run Codex from the repository root so it can pick up the project instructions in
 
 The app currently uses placeholder data and does not require the backend.
 
+Local Xcode user data and `.DS_Store` files are ignored and should stay out of git.
+
 ## Future Core Backend Setup
 
 Future steps will add TypeScript backend setup instructions here.

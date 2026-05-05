@@ -1,11 +1,15 @@
 # macOS
 .DS_Store
+**/.DS_Store
 .AppleDouble
 .LSOverride
 
 # Xcode
 DerivedData/
+**/DerivedData/
+**/xcuserdata/
 *.xcuserstate
+**/*.xcuserstate
 *.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/
 *.xcodeproj/project.xcworkspace/xcuserdata/
