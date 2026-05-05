@@ -6,8 +6,8 @@ MailShield Agent will be built in small commit-friendly steps.
 0.5. Complete: Product framing, implementation planning, and Codex project instructions
 1. Complete: macOS menu bar app skeleton
 2. Complete: TypeScript backend health endpoint
-3. Next: SwiftUI app calls backend health endpoint
-4. Mock scan results endpoint
+3. Complete: SwiftUI app calls backend health endpoint
+4. Next: Mock scan results endpoint and UI
 5. Email list and detail UI
 6. SQLite scan history
 7. Gmail OAuth and Gmail API

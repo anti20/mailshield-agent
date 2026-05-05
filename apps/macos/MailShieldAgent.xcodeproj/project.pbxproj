@@ -14,6 +14,8 @@
 		8A2D4E5F1B3C400000000105 /* PlaceholderSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2D4E5F1B3C400000000205 /* PlaceholderSectionView.swift */; };
 		8A2D4E5F1B3C400000000106 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2D4E5F1B3C400000000206 /* MenuBarView.swift */; };
 		8A2D4E5F1B3C400000000107 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A2D4E5F1B3C400000000207 /* Assets.xcassets */; };
+		8A2D4E5F1B3C400000000108 /* HealthResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2D4E5F1B3C400000000209 /* HealthResponse.swift */; };
+		8A2D4E5F1B3C400000000109 /* BackendClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2D4E5F1B3C40000000020A /* BackendClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +27,8 @@
 		8A2D4E5F1B3C400000000206 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		8A2D4E5F1B3C400000000207 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8A2D4E5F1B3C400000000208 /* MailShieldAgent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MailShieldAgent.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8A2D4E5F1B3C400000000209 /* HealthResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthResponse.swift; sourceTree = "<group>"; };
+		8A2D4E5F1B3C40000000020A /* BackendClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +55,8 @@
 			children = (
 				8A2D4E5F1B3C400000000201 /* MailShieldAgentApp.swift */,
 				8A2D4E5F1B3C400000000202 /* AppState.swift */,
+				8A2D4E5F1B3C400000000406 /* Models */,
+				8A2D4E5F1B3C400000000407 /* Services */,
 				8A2D4E5F1B3C400000000404 /* Views */,
 				8A2D4E5F1B3C400000000405 /* Resources */,
 			);
@@ -82,6 +88,22 @@
 				8A2D4E5F1B3C400000000207 /* Assets.xcassets */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		8A2D4E5F1B3C400000000406 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				8A2D4E5F1B3C400000000209 /* HealthResponse.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		8A2D4E5F1B3C400000000407 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				8A2D4E5F1B3C40000000020A /* BackendClient.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -161,6 +183,8 @@
 				8A2D4E5F1B3C400000000104 /* StatusCardView.swift in Sources */,
 				8A2D4E5F1B3C400000000105 /* PlaceholderSectionView.swift in Sources */,
 				8A2D4E5F1B3C400000000106 /* MenuBarView.swift in Sources */,
+				8A2D4E5F1B3C400000000108 /* HealthResponse.swift in Sources */,
+				8A2D4E5F1B3C400000000109 /* BackendClient.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -13,11 +13,28 @@ MailShield Agent is planned as a local-first macOS email safety assistant. The s
 
 ## Current Implementation
 
-The current implementation includes a minimal native SwiftUI macOS menu bar app skeleton in `apps/macos`. It shows a menu bar item, can open a dashboard window, displays placeholder backend status, and includes placeholder sections for recent scans and agent checks.
+The current implementation includes a minimal native SwiftUI macOS menu bar app in `apps/macos`. It shows a menu bar item, can open a dashboard window, and includes placeholder sections for recent scans and agent checks.
 
-The current backend skeleton lives in `apps/core`. It is a local TypeScript/Express service and currently exposes only `GET /health`, which returns the service status.
+The current backend skeleton lives in `apps/core`. It is a local TypeScript Node project that uses Express as the HTTP server. It currently exposes only `GET /health` on local port `3000`, which verifies that the core service is running.
 
-macOS integration is planned for the next step. The app does not call the backend yet.
+The macOS dashboard now calls `http://localhost:3000/health` with `URLSession` through `BackendClient`. The response is decoded into a Swift model and updates the backend status card.
+
+## Current App-To-Backend Flow
+
+```text
+SwiftUI Dashboard
+  |
+  v
+BackendClient
+  |
+  v
+GET http://localhost:3000/health
+  |
+  v
+Express backend
+```
+
+This verifies local app/backend communication before Gmail, OpenAI Agents SDK, MCP, or SQLite work begins.
 
 ## Text Diagram
 
@@ -28,7 +45,7 @@ User
 SwiftUI macOS menu bar app
   |
   v
-Local TypeScript backend
+Local TypeScript/Express backend
   |
   +--> Gmail API integration
   |
@@ -42,4 +59,4 @@ Local TypeScript backend
 
 ## Notes
 
-Gmail integration, OpenAI Agents SDK workflow, MCP tool layer, notifications, and local database will be added in later steps.
+Gmail integration, OpenAI Agents SDK workflow, MCP tool layer, notifications, and the SQLite local database will be added in later steps. No Gmail, OpenAI, MCP, or database integration exists yet.

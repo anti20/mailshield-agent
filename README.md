@@ -25,6 +25,7 @@ Step 0 complete: project structure and base documentation are in place.
 Step 0.5 complete: Codex project instructions are documented in `AGENTS.md`.
 Step 1 complete: a native SwiftUI macOS menu bar app skeleton is in place.
 Step 2 complete: the local TypeScript backend exposes a health endpoint.
+Step 3 complete: the macOS dashboard can check the local backend health endpoint.
 
 ## Documentation
 
@@ -37,15 +38,7 @@ Step 2 complete: the local TypeScript backend exposes a health endpoint.
 
 ## Run Instructions
 
-The macOS app can be opened in Xcode:
-
-1. Open `apps/macos/MailShieldAgent.xcodeproj`.
-2. Select the `MailShieldAgent` scheme.
-3. Run the app from Xcode.
-
-The app currently uses placeholder data only and is not connected to the backend yet.
-
-The backend can be started locally:
+Start the TypeScript Node backend first:
 
 ```bash
 cd apps/core
@@ -53,8 +46,27 @@ npm install
 npm run dev
 ```
 
-Health check:
+The backend uses Express as its HTTP server and listens on port `3000` by default. Its first endpoint is:
 
 ```text
-http://localhost:3000/health
+GET http://localhost:3000/health
 ```
+
+Expected response:
+
+```json
+{
+  "status": "ok",
+  "service": "mailshield-core"
+}
+```
+
+Open and run the macOS app in Xcode:
+
+1. Open `apps/macos/MailShieldAgent.xcodeproj`.
+2. Select the `MailShieldAgent` scheme.
+3. Run the app from Xcode.
+
+The dashboard can now check backend health with `URLSession`. Click "Check backend" to verify that the local core service is running.
+
+No Gmail, OpenAI Agents SDK, MCP, or database integration exists yet.

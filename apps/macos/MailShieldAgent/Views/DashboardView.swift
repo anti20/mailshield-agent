@@ -7,7 +7,18 @@ struct DashboardView: View {
         VStack(alignment: .leading, spacing: 20) {
             header
 
-            StatusCardView(status: appState.backendStatus)
+            StatusCardView(
+                status: appState.backendStatus,
+                serviceName: appState.backendServiceName,
+                lastCheckedAt: appState.backendLastCheckedAt,
+                errorMessage: appState.backendErrorMessage,
+                isChecking: appState.isCheckingBackend,
+                checkAction: {
+                    Task {
+                        await appState.checkBackendHealth()
+                    }
+                }
+            )
 
             PlaceholderSectionView(
                 title: "Recent scans",
@@ -22,6 +33,9 @@ struct DashboardView: View {
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(Color(nsColor: .windowBackgroundColor))
+        .task {
+            await appState.checkBackendHealthIfNeeded()
+        }
     }
 
     private var header: some View {
