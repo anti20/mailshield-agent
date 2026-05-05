@@ -2,9 +2,9 @@
 
 ## Current Status
 
-There is nothing to install yet for the backend. Step 1 adds a minimal macOS app skeleton that can be opened and run in Xcode.
+Step 2 adds a minimal local TypeScript backend with a health endpoint.
 
-No package manager, backend runtime, Gmail credentials, OpenAI configuration, MCP setup, or database setup exists yet.
+No Gmail credentials, OpenAI configuration, MCP setup, or database setup exists yet.
 
 ## Codex Setup
 
@@ -20,6 +20,36 @@ The app currently uses placeholder data and does not require the backend.
 
 Local Xcode user data and `.DS_Store` files are ignored and should stay out of git.
 
-## Future Core Backend Setup
+## Core Backend Setup
 
-Future steps will add TypeScript backend setup instructions here.
+Install dependencies:
+
+```bash
+cd apps/core
+npm install
+```
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+The backend listens on port `3000` by default.
+
+Verify the health endpoint:
+
+```bash
+curl http://localhost:3000/health
+```
+
+Expected response:
+
+```json
+{
+  "status": "ok",
+  "service": "mailshield-core"
+}
+```
+
+The macOS app does not call the backend yet.

@@ -24,6 +24,7 @@ MailShield Agent is planned as a small multi-part system:
 Step 0 complete: project structure and base documentation are in place.
 Step 0.5 complete: Codex project instructions are documented in `AGENTS.md`.
 Step 1 complete: a native SwiftUI macOS menu bar app skeleton is in place.
+Step 2 complete: the local TypeScript backend exposes a health endpoint.
 
 ## Documentation
 
@@ -34,7 +35,7 @@ Step 1 complete: a native SwiftUI macOS menu bar app skeleton is in place.
 - [Codex instructions](AGENTS.md)
 - [Product positioning](docs/product-positioning.md)
 
-## Future Run Instructions
+## Run Instructions
 
 The macOS app can be opened in Xcode:
 
@@ -42,4 +43,18 @@ The macOS app can be opened in Xcode:
 2. Select the `MailShieldAgent` scheme.
 3. Run the app from Xcode.
 
-The app currently uses placeholder data only. Future steps will add setup and run commands for the local backend.
+The app currently uses placeholder data only and is not connected to the backend yet.
+
+The backend can be started locally:
+
+```bash
+cd apps/core
+npm install
+npm run dev
+```
+
+Health check:
+
+```text
+http://localhost:3000/health
+```

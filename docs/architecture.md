@@ -15,7 +15,9 @@ MailShield Agent is planned as a local-first macOS email safety assistant. The s
 
 The current implementation includes a minimal native SwiftUI macOS menu bar app skeleton in `apps/macos`. It shows a menu bar item, can open a dashboard window, displays placeholder backend status, and includes placeholder sections for recent scans and agent checks.
 
-Backend integration is planned for a later step. The app does not call any local service yet.
+The current backend skeleton lives in `apps/core`. It is a local TypeScript/Express service and currently exposes only `GET /health`, which returns the service status.
+
+macOS integration is planned for the next step. The app does not call the backend yet.
 
 ## Text Diagram
 
@@ -40,4 +42,4 @@ Local TypeScript backend
 
 ## Notes
 
-The backend, Gmail integration, OpenAI Agents SDK workflow, MCP tool layer, notifications, and local database will be added in later steps.
+Gmail integration, OpenAI Agents SDK workflow, MCP tool layer, notifications, and local database will be added in later steps.

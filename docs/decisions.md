@@ -14,3 +14,5 @@
 - The first UI client is a native SwiftUI macOS menu bar app
 - The backend is intentionally not connected in the macOS skeleton step
 - Repeated Codex project instructions are stored in `AGENTS.md`
+- The core backend starts as a local TypeScript/Express service
+- Backend integration is intentionally limited to `GET /health` in this step
