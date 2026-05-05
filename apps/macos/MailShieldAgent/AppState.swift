@@ -14,8 +14,10 @@ final class AppState: ObservableObject {
     @Published private(set) var backendLastCheckedAt: Date?
     @Published private(set) var backendErrorMessage: String?
 
-    let recentScansPlaceholder = "No scans yet"
-    let agentChecksPlaceholder = "No agent checks yet"
+    @Published private(set) var scanResults: [EmailScanResult] = []
+    @Published var selectedScanResultID: EmailScanResult.ID?
+    @Published private(set) var isLoadingScanResults = false
+    @Published private(set) var scanResultsErrorMessage: String?
 
     private let backendClient: BackendClient
 
@@ -25,6 +27,10 @@ final class AppState: ObservableObject {
 
     var isCheckingBackend: Bool {
         backendConnectionStatus == .checking
+    }
+
+    var selectedScanResult: EmailScanResult? {
+        scanResults.first { $0.id == selectedScanResultID }
     }
 
     init(backendClient: BackendClient = BackendClient()) {
@@ -60,5 +66,23 @@ final class AppState: ObservableObject {
             backendConnectionStatus = .offline
             backendErrorMessage = error.localizedDescription
         }
+    }
+
+    func loadMockScans() async {
+        isLoadingScanResults = true
+        scanResultsErrorMessage = nil
+
+        do {
+            let response = try await backendClient.fetchScanResults()
+            scanResults = response.items
+
+            if selectedScanResultID == nil || selectedScanResult == nil {
+                selectedScanResultID = response.items.first?.id
+            }
+        } catch {
+            scanResultsErrorMessage = error.localizedDescription
+        }
+
+        isLoadingScanResults = false
     }
 }

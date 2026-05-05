@@ -8,6 +8,8 @@ MailShield Agent is planned as a local-first macOS assistant for monitoring Gmai
 
 The app starts as a native macOS menu bar client connected to a local TypeScript Node backend. The current backend uses Express, runs locally on port `3000`, exposes `GET /health` to verify that the core service is running, and exposes `GET /scan-results` with mock email scan result data.
 
+The macOS app can now demonstrate the planned explainable threat review UI with mock data. It loads scan results, shows risk level and score, and displays per-agent checks as `passed`, `warning`, or `failed`.
+
 A later backend will connect to Gmail, run scan workflows, coordinate threat analysis through the OpenAI Agents SDK, expose controlled actions through MCP, and store scan history locally.
 
 ## Planned Extensions
@@ -25,4 +27,4 @@ MailShield Agent is intended to combine a focused macOS menu bar experience with
 
 ## Current Limitation
 
-The current app is still a local shell and backend demo. The backend can demonstrate explainable scan results using mock data with per-agent checks, where each check has a `passed`, `warning`, or `failed` status. Gmail scanning does not work yet, the mock data is not persisted, and no Gmail, OpenAI Agents SDK, MCP, notifications, or database integration exists yet.
+The current app is still a local shell and backend demo. The backend returns mock scan result data, and the macOS app displays those results through `URLSession` calls to `GET /scan-results`. Gmail scanning does not work yet, the mock data is not persisted, and no Gmail, OpenAI Agents SDK, MCP, notifications, or database integration exists yet.

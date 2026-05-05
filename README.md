@@ -27,6 +27,7 @@ Step 1 complete: a native SwiftUI macOS menu bar app skeleton is in place.
 Step 2 complete: the local TypeScript backend exposes a health endpoint.
 Step 3 complete: the macOS dashboard can check the local backend health endpoint.
 Step 4 complete: the backend exposes mock email scan results.
+Step 5 complete: the macOS dashboard can load and display mock scan results.
 
 ## Documentation
 
@@ -83,5 +84,13 @@ Open and run the macOS app in Xcode:
 3. Run the app from Xcode.
 
 The dashboard can now check backend health with `URLSession`. Click "Check backend" to verify that the local core service is running.
+
+To verify the mock scan results UI:
+
+1. Start the backend with `npm run dev` from `apps/core`.
+2. Run the macOS app from Xcode.
+3. Click "Load mock scans" in the dashboard.
+
+The macOS app uses `URLSession` to call `GET /scan-results`. The backend returns static mock scan result data with per-agent checks, and the UI displays each check as `passed`, `warning`, or `failed`. The scan results are not persisted and do not use Gmail, OpenAI Agents SDK, MCP, or SQLite yet.
 
 No Gmail, OpenAI Agents SDK, MCP, or database integration exists yet.

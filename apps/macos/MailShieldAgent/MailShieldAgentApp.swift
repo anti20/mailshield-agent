@@ -16,8 +16,8 @@ struct MailShieldAgentApp: App {
         Window("MailShield Agent", id: "dashboard") {
             DashboardView()
                 .environmentObject(appState)
-                .frame(minWidth: 480, minHeight: 440)
+                .frame(minWidth: 760, minHeight: 520)
         }
-        .defaultSize(width: 560, height: 520)
+        .defaultSize(width: 860, height: 640)
     }
 }

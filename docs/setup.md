@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step 4 adds static mock email scan results to the local TypeScript Node backend.
+Step 5 connects the macOS dashboard to the backend mock scan results endpoint.
 
 No Gmail credentials, OpenAI configuration, MCP setup, or database setup exists yet.
 
@@ -16,7 +16,7 @@ Run Codex from the repository root so it can pick up the project instructions in
 2. Select the `MailShieldAgent` scheme.
 3. Run the app.
 
-The app uses `URLSession` to call the local backend health endpoint from the dashboard.
+The app uses `URLSession` to call the local backend health endpoint and mock scan results endpoint from the dashboard.
 
 Local Xcode user data and `.DS_Store` files are ignored and should stay out of git.
 
@@ -81,7 +81,14 @@ npm run dev
 
 2. Run the macOS app from Xcode.
 3. Click "Check backend" in the dashboard.
+4. Click "Load mock scans" in the dashboard.
 
 The status card should show `Online` and the `mailshield-core` service name when the backend responds with `status: "ok"`. It should show `Offline` with an error message if the backend is not running.
 
+The scan UI should show recent mock scans. Selecting a scan shows subject, sender, risk level, risk score, summary, and per-agent checks. Each per-agent check is displayed as `passed`, `warning`, or `failed`.
+
+The backend must be running before loading scans. If `GET /scan-results` fails, the dashboard shows a simple error message.
+
 No Gmail, OpenAI Agents SDK, MCP, or database integration exists yet.
+
+The mock scan results are static backend data. They are not persisted and do not use Gmail, OpenAI Agents SDK, MCP, or SQLite yet.

@@ -16,6 +16,11 @@
 		8A2D4E5F1B3C400000000107 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A2D4E5F1B3C400000000207 /* Assets.xcassets */; };
 		8A2D4E5F1B3C400000000108 /* HealthResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2D4E5F1B3C400000000209 /* HealthResponse.swift */; };
 		8A2D4E5F1B3C400000000109 /* BackendClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2D4E5F1B3C40000000020A /* BackendClient.swift */; };
+		8A2D4E5F1B3C40000000010A /* ScanResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2D4E5F1B3C40000000020B /* ScanResult.swift */; };
+		8A2D4E5F1B3C40000000010B /* EmailListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2D4E5F1B3C40000000020C /* EmailListView.swift */; };
+		8A2D4E5F1B3C40000000010C /* EmailDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2D4E5F1B3C40000000020D /* EmailDetailView.swift */; };
+		8A2D4E5F1B3C40000000010D /* AgentCheckRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2D4E5F1B3C40000000020E /* AgentCheckRowView.swift */; };
+		8A2D4E5F1B3C40000000010E /* RiskBadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2D4E5F1B3C40000000020F /* RiskBadgeView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +34,11 @@
 		8A2D4E5F1B3C400000000208 /* MailShieldAgent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MailShieldAgent.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A2D4E5F1B3C400000000209 /* HealthResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthResponse.swift; sourceTree = "<group>"; };
 		8A2D4E5F1B3C40000000020A /* BackendClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendClient.swift; sourceTree = "<group>"; };
+		8A2D4E5F1B3C40000000020B /* ScanResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanResult.swift; sourceTree = "<group>"; };
+		8A2D4E5F1B3C40000000020C /* EmailListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailListView.swift; sourceTree = "<group>"; };
+		8A2D4E5F1B3C40000000020D /* EmailDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmailDetailView.swift; sourceTree = "<group>"; };
+		8A2D4E5F1B3C40000000020E /* AgentCheckRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentCheckRowView.swift; sourceTree = "<group>"; };
+		8A2D4E5F1B3C40000000020F /* RiskBadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RiskBadgeView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +88,10 @@
 				8A2D4E5F1B3C400000000204 /* StatusCardView.swift */,
 				8A2D4E5F1B3C400000000205 /* PlaceholderSectionView.swift */,
 				8A2D4E5F1B3C400000000206 /* MenuBarView.swift */,
+				8A2D4E5F1B3C40000000020C /* EmailListView.swift */,
+				8A2D4E5F1B3C40000000020D /* EmailDetailView.swift */,
+				8A2D4E5F1B3C40000000020E /* AgentCheckRowView.swift */,
+				8A2D4E5F1B3C40000000020F /* RiskBadgeView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -94,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				8A2D4E5F1B3C400000000209 /* HealthResponse.swift */,
+				8A2D4E5F1B3C40000000020B /* ScanResult.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -185,6 +200,11 @@
 				8A2D4E5F1B3C400000000106 /* MenuBarView.swift in Sources */,
 				8A2D4E5F1B3C400000000108 /* HealthResponse.swift in Sources */,
 				8A2D4E5F1B3C400000000109 /* BackendClient.swift in Sources */,
+				8A2D4E5F1B3C40000000010A /* ScanResult.swift in Sources */,
+				8A2D4E5F1B3C40000000010B /* EmailListView.swift in Sources */,
+				8A2D4E5F1B3C40000000010C /* EmailDetailView.swift in Sources */,
+				8A2D4E5F1B3C40000000010D /* AgentCheckRowView.swift in Sources */,
+				8A2D4E5F1B3C40000000010E /* RiskBadgeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -20,15 +20,22 @@ struct DashboardView: View {
                 }
             )
 
-            PlaceholderSectionView(
-                title: "Recent scans",
-                message: appState.recentScansPlaceholder
-            )
+            HStack(alignment: .top, spacing: 16) {
+                EmailListView(
+                    scanResults: appState.scanResults,
+                    selectedScanResultID: $appState.selectedScanResultID,
+                    isLoading: appState.isLoadingScanResults,
+                    errorMessage: appState.scanResultsErrorMessage,
+                    loadAction: {
+                        Task {
+                            await appState.loadMockScans()
+                        }
+                    }
+                )
+                .frame(width: 260)
 
-            PlaceholderSectionView(
-                title: "Agent checks",
-                message: appState.agentChecksPlaceholder
-            )
+                EmailDetailView(scanResult: appState.selectedScanResult)
+            }
         }
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
