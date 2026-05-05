@@ -4,7 +4,7 @@ MailShield Core is the local TypeScript backend for MailShield Agent.
 
 ## Current Status
 
-The backend currently exposes only a health endpoint.
+The backend currently exposes a health endpoint and static mock email scan results.
 
 ## Setup
 
@@ -34,3 +34,11 @@ Expected response:
   "service": "mailshield-core"
 }
 ```
+
+Verify mock scan results:
+
+```bash
+curl http://localhost:3000/scan-results
+```
+
+`GET /scan-results` returns fake scan result data with per-agent checks. It is not persisted and does not use Gmail, OpenAI, MCP, or SQLite yet.

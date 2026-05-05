@@ -26,6 +26,7 @@ Step 0.5 complete: Codex project instructions are documented in `AGENTS.md`.
 Step 1 complete: a native SwiftUI macOS menu bar app skeleton is in place.
 Step 2 complete: the local TypeScript backend exposes a health endpoint.
 Step 3 complete: the macOS dashboard can check the local backend health endpoint.
+Step 4 complete: the backend exposes mock email scan results.
 
 ## Documentation
 
@@ -60,6 +61,20 @@ Expected response:
   "service": "mailshield-core"
 }
 ```
+
+The backend also exposes mock scan result data:
+
+```text
+GET http://localhost:3000/scan-results
+```
+
+Verify it with curl:
+
+```bash
+curl http://localhost:3000/scan-results
+```
+
+`GET /scan-results` returns fake email scan results with per-agent checks. The mock data is not persisted and does not use Gmail, OpenAI Agents SDK, MCP, or a database yet.
 
 Open and run the macOS app in Xcode:
 

@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step 3 connects the macOS dashboard to the local TypeScript Node backend health endpoint.
+Step 4 adds static mock email scan results to the local TypeScript Node backend.
 
 No Gmail credentials, OpenAI configuration, MCP setup, or database setup exists yet.
 
@@ -53,6 +53,22 @@ Expected response:
 ```
 
 `GET /health` is the first endpoint and verifies that the core service is running.
+
+Verify the mock scan results endpoint:
+
+```bash
+curl http://localhost:3000/scan-results
+```
+
+Expected response shape:
+
+```json
+{
+  "items": []
+}
+```
+
+`GET /scan-results` returns mock email scan result data. Each item includes per-agent checks, and each check has a `passed`, `warning`, or `failed` status. The data is not persisted and does not use Gmail, OpenAI Agents SDK, MCP, or a database yet.
 
 ## Run Both Parts Together
 

@@ -18,3 +18,5 @@
 - Backend integration is intentionally limited to `GET /health` in this step
 - The macOS app talks to the local backend over localhost HTTP.
 - Health check integration is implemented before Gmail or AI features.
+- Mock scan data is introduced before Gmail and SQLite.
+- Static mock results keep UI development independent from external integrations and persistence.

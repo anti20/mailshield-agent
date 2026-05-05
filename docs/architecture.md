@@ -15,9 +15,18 @@ MailShield Agent is planned as a local-first macOS email safety assistant. The s
 
 The current implementation includes a minimal native SwiftUI macOS menu bar app in `apps/macos`. It shows a menu bar item, can open a dashboard window, and includes placeholder sections for recent scans and agent checks.
 
-The current backend skeleton lives in `apps/core`. It is a local TypeScript Node project that uses Express as the HTTP server. It currently exposes only `GET /health` on local port `3000`, which verifies that the core service is running.
+The current backend skeleton lives in `apps/core`. It is a local TypeScript Node project that uses Express as the HTTP server on local port `3000`.
+
+## Current Backend Routes
+
+- `GET /health`: verifies that the core service is running.
+- `GET /scan-results`: returns static mock email scan result data.
+
+The scan result model includes per-agent checks. Each check has a `passed`, `warning`, or `failed` status, plus a reason and optional evidence. The mock endpoint is not persisted and does not use Gmail, OpenAI Agents SDK, MCP, or SQLite yet.
 
 The macOS dashboard now calls `http://localhost:3000/health` with `URLSession` through `BackendClient`. The response is decoded into a Swift model and updates the backend status card.
+
+`GET /scan-results` prepares the backend contract for the later email scan history screen. The macOS app is not connected to that endpoint yet.
 
 ## Current App-To-Backend Flow
 
