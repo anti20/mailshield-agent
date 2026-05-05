@@ -1,6 +1,6 @@
 # Architecture
 
-MailShield Agent is planned as a local-first macOS email safety assistant. The system will keep user interaction in a SwiftUI menu bar app while delegating scanning and integrations to a local TypeScript backend.
+MailShield Agent is planned as a local-first macOS email safety assistant. The system keeps user interaction in a SwiftUI menu bar app while delegating scanning and integrations to a local TypeScript backend.
 
 ## Planned Components
 
@@ -10,6 +10,12 @@ MailShield Agent is planned as a local-first macOS email safety assistant. The s
 - Local MCP tool layer: a controlled tool layer for local actions and integration boundaries.
 - Gmail API integration: the first email provider integration.
 - SQLite scan history: local storage for scan results and audit history.
+
+## Current Implementation
+
+The current implementation includes a minimal native SwiftUI macOS menu bar app skeleton in `apps/macos`. It shows a menu bar item, can open a dashboard window, displays placeholder backend status, and includes placeholder sections for recent scans and agent checks.
+
+Backend integration is planned for a later step. The app does not call any local service yet.
 
 ## Text Diagram
 
@@ -34,4 +40,4 @@ Local TypeScript backend
 
 ## Notes
 
-The macOS app and backend will be added in later steps. This step only defines the intended structure and direction.
+The backend, Gmail integration, OpenAI Agents SDK workflow, MCP tool layer, notifications, and local database will be added in later steps.

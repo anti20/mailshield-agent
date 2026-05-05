@@ -20,6 +20,7 @@ MailShield Agent is planned as a small multi-part system:
 ## Current Status
 
 Step 0 complete: project structure and base documentation are in place.
+Step 1 complete: a native SwiftUI macOS menu bar app skeleton is in place.
 
 ## Documentation
 
@@ -30,4 +31,10 @@ Step 0 complete: project structure and base documentation are in place.
 
 ## Future Run Instructions
 
-There is nothing to run yet. Future steps will add setup and run commands for the macOS app and the local backend.
+The macOS app can be opened in Xcode:
+
+1. Open `apps/macos/MailShieldAgent.xcodeproj`.
+2. Select the `MailShieldAgent` scheme.
+3. Run the app from Xcode.
+
+The app currently uses placeholder data only. Future steps will add setup and run commands for the local backend.

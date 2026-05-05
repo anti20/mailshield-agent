@@ -2,9 +2,9 @@
 
 MailShield Agent will be built in small commit-friendly steps.
 
-0. Project structure and documentation
-1. macOS menu bar app skeleton
-2. TypeScript backend health endpoint
+0. Complete: Project structure and documentation
+1. Complete: macOS menu bar app skeleton
+2. Next: TypeScript backend health endpoint
 3. SwiftUI app calls backend health endpoint
 4. Mock scan results endpoint
 5. Email list and detail UI
