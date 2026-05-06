@@ -4,7 +4,7 @@ MailShield Core is the local TypeScript backend for MailShield Agent.
 
 ## Current Status
 
-The backend currently exposes a health endpoint, SQLite-backed mock email scan results, a rule-based Static Threat Agent preview, and prepared readonly Gmail OAuth endpoints.
+The backend currently exposes a health endpoint, SQLite-backed mock email scan results, a rule-based Static Threat Agent preview, readonly Gmail OAuth endpoints, local token persistence, and a Gmail profile test endpoint.
 
 ## Setup
 
@@ -28,7 +28,7 @@ npm run dev
 
 The server listens on port `3000` by default.
 
-The local SQLite database is created at `apps/core/data/mailshield.sqlite`. Mock scan results are seeded only when the database is empty.
+The local SQLite database is created at `apps/core/data/mailshield.sqlite`. Mock scan results are seeded only when the database is empty. Gmail OAuth tokens are stored in SQLite for local development only.
 
 ## Verify
 
@@ -67,6 +67,20 @@ Start the Gmail OAuth flow:
 http://localhost:3000/auth/gmail/start
 ```
 
-`GET /auth/gmail/start` redirects to Google OAuth, and `GET /auth/gmail/callback` returns safe token metadata after the callback. Full tokens are not logged or returned, token persistence is not complete, and Gmail message fetching is not implemented yet. This does not use OpenAI or MCP.
+`GET /auth/gmail/start` redirects to Google OAuth, and `GET /auth/gmail/callback` stores tokens in local SQLite and returns safe token metadata after the callback. Full tokens are not logged or returned.
+
+Verify Gmail connection status:
+
+```bash
+curl http://localhost:3000/auth/gmail/status
+```
+
+Verify the Gmail profile endpoint after OAuth:
+
+```bash
+curl http://localhost:3000/auth/gmail/profile
+```
+
+`GET /auth/gmail/status` returns safe connection metadata. `GET /auth/gmail/profile` verifies the Gmail API connection with safe profile data. Gmail message fetching and scanning are not implemented yet. This does not use OpenAI or MCP.
 
 To reset local data, stop the backend and delete `apps/core/data/mailshield.sqlite`.

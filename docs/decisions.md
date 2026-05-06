@@ -31,4 +31,8 @@
 - Gmail integration starts with readonly OAuth using `https://www.googleapis.com/auth/gmail.readonly`.
 - OAuth is prepared before fetching real emails so local configuration and consent flow issues can be solved separately.
 - Secrets live in local `apps/core/.env`, while `apps/core/.env.example` is committed as the template.
-- Gmail OAuth callbacks return safe token metadata only; full tokens are not logged or returned, and token persistence is planned for a later step.
+- Gmail OAuth callbacks return safe token metadata only; full tokens are not logged or returned.
+- Gmail OAuth tokens are stored in local SQLite for development.
+- Token values are never logged or returned in API responses.
+- Gmail profile testing comes before message fetching so the API connection can be verified without reading message content.
+- Production Gmail token storage should use stronger secure storage than the current local development SQLite table.

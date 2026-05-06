@@ -15,7 +15,7 @@ MailShield Agent is planned as a local-first macOS email safety assistant. The s
 
 The current implementation includes a native SwiftUI macOS menu bar app in `apps/macos`. It shows a menu bar item, can open a dashboard window, checks backend health, loads mock scan results into a recent scans UI, and visualizes Static Threat Agent preview checks.
 
-The current backend skeleton lives in `apps/core`. It is a local TypeScript Node project that uses Express as the HTTP server on local port `3000`, SQLite for local scan history, and prepared Gmail OAuth configuration.
+The current backend skeleton lives in `apps/core`. It is a local TypeScript Node project that uses Express as the HTTP server on local port `3000`, SQLite for local scan history and local development Gmail OAuth token storage, and prepared Gmail profile testing.
 
 ## Current Backend Routes
 
@@ -24,8 +24,10 @@ The current backend skeleton lives in `apps/core`. It is a local TypeScript Node
 - `GET /scan-preview`: runs the rule-based Static Threat Agent against mock normalized emails.
 - `GET /auth/gmail/start`: begins the prepared Gmail OAuth flow.
 - `GET /auth/gmail/callback`: handles the prepared Gmail OAuth callback.
+- `GET /auth/gmail/status`: returns safe Gmail connection metadata.
+- `GET /auth/gmail/profile`: verifies the Gmail API connection with safe profile data.
 
-The scan result model includes per-agent checks. Each check has a `passed`, `warning`, or `failed` status, plus a reason and optional evidence. The backend seeds the current mock scan results into SQLite only when the database is empty. Gmail OAuth is prepared, but Gmail message fetching is not implemented yet. The backend does not use OpenAI Agents SDK or MCP yet.
+The scan result model includes per-agent checks. Each check has a `passed`, `warning`, or `failed` status, plus a reason and optional evidence. The backend seeds the current mock scan results into SQLite only when the database is empty. Gmail OAuth tokens are persisted locally, but Gmail message fetching and scanning are not implemented yet. The backend does not use OpenAI Agents SDK or MCP yet.
 
 ## Current Gmail OAuth Preparation
 
@@ -59,7 +61,36 @@ GET /auth/gmail/callback
 
 `GET /auth/gmail/start` redirects the browser to Google OAuth with readonly Gmail access, offline access, a development consent prompt, and a simple placeholder state value. Stronger state validation is required later.
 
-`GET /auth/gmail/callback` accepts the OAuth code and exchanges it for tokens when the required configuration exists. The callback returns safe token metadata only. Full access tokens and refresh tokens are not logged or returned in responses. Token persistence and real Gmail message fetching are planned for later steps.
+`GET /auth/gmail/callback` accepts the OAuth code and exchanges it for tokens when the required configuration exists. The callback stores token data through `GmailTokenStore` in local SQLite and returns safe token metadata only. Full access tokens and refresh tokens are not logged or returned in responses.
+
+The Gmail auth persistence flow is:
+
+```text
+OAuth callback
+  |
+  v
+GmailAuthService
+  |
+  v
+GmailTokenStore
+  |
+  v
+SQLite gmail_auth_tokens
+```
+
+`GET /auth/gmail/status` reads `GmailTokenStore` and returns safe connection metadata only. `GET /auth/gmail/profile` reads the stored token, calls Gmail through `GmailProfileService`, and returns safe Gmail profile data:
+
+```text
+GET /auth/gmail/profile
+  |
+  v
+GmailProfileService
+  |
+  v
+Gmail API users.getProfile
+```
+
+If the access token is expired and a refresh token exists, the profile service attempts to refresh credentials through the Google client and update local token storage. This is local development storage only; production should use stronger secure storage later. Real Gmail message fetching and scanning are planned next.
 
 ## Current Static Threat Agent
 
@@ -84,8 +115,9 @@ The backend initializes these tables on startup:
 - `email_scan_results`
 - `agent_checks`
 - `seen_messages`
+- `gmail_auth_tokens`
 
-`email_scan_results` stores scan-level email findings. `agent_checks` stores explainable per-agent checks for each scan. `seen_messages` can store seen Gmail message IDs and timestamps for future Gmail polling, but Gmail is not connected yet.
+`email_scan_results` stores scan-level email findings. `agent_checks` stores explainable per-agent checks for each scan. `seen_messages` can store seen Gmail message IDs and timestamps for future Gmail polling. `gmail_auth_tokens` stores Gmail OAuth token data for a single local Gmail account during development.
 
 The macOS dashboard now calls `http://localhost:3000/health` with `URLSession` through `BackendClient`. The response is decoded into a Swift model and updates the backend status card.
 
@@ -180,4 +212,4 @@ Local TypeScript/Express backend
 
 ## Notes
 
-Gmail OAuth is prepared, but Gmail message fetching will be added in a later step. OpenAI Agents SDK workflow, MCP tool layer, and notifications will also be added later. Mock scan results are persisted locally after seeding, but Static Threat Agent preview results are not persisted.
+Gmail OAuth token persistence and profile testing are prepared, but Gmail message fetching and scanning will be added in a later step. OpenAI Agents SDK workflow, MCP tool layer, and notifications will also be added later. Mock scan results are persisted locally after seeding, but Static Threat Agent preview results are not persisted.

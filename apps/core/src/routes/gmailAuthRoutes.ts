@@ -1,10 +1,20 @@
 import { Router } from "express";
 import {
   GmailAuthConfigurationError,
+  GmailAuthRequestError,
   type GmailAuthService
 } from "../gmail/GmailAuthService.js";
+import {
+  GmailAuthNotConnectedError,
+  type GmailProfileService
+} from "../gmail/GmailProfileService.js";
+import type { GmailTokenStore, StoredGmailToken } from "../storage/GmailTokenStore.js";
 
-export function gmailAuthRoutes(gmailAuthService: GmailAuthService): Router {
+export function gmailAuthRoutes(
+  gmailAuthService: GmailAuthService,
+  gmailTokenStore: GmailTokenStore,
+  gmailProfileService: GmailProfileService
+): Router {
   const router = Router();
 
   router.get("/auth/gmail/start", (_request, response, next) => {
@@ -18,13 +28,43 @@ export function gmailAuthRoutes(gmailAuthService: GmailAuthService): Router {
   router.get("/auth/gmail/callback", async (request, response, next) => {
     try {
       const code = readCode(request.query.code);
-      const tokenMetadata = await gmailAuthService.exchangeCodeForTokenMetadata(code);
+      const token = await gmailAuthService.exchangeCodeForTokens(code);
+      const storedToken = gmailTokenStore.saveToken(token);
+      const tokenMetadata = gmailAuthService.toSafeTokenMetadata(storedToken);
 
       response.json({
-        status: "ok",
-        message: "Gmail OAuth callback received. Token persistence is not implemented yet.",
-        tokenMetadata
+        status: "connected",
+        provider: "gmail",
+        scope: tokenMetadata.scope,
+        hasAccessToken: tokenMetadata.hasAccessToken,
+        hasRefreshToken: tokenMetadata.hasRefreshToken
       });
+    } catch (error) {
+      handleGmailAuthError(error, response, next);
+    }
+  });
+
+  router.get("/auth/gmail/status", (_request, response, next) => {
+    try {
+      const storedToken = gmailTokenStore.getToken();
+
+      if (!storedToken?.accessToken && !storedToken?.refreshToken) {
+        response.json({
+          connected: false,
+          provider: "gmail"
+        });
+        return;
+      }
+
+      response.json(toStatusResponse(storedToken));
+    } catch (error) {
+      handleGmailAuthError(error, response, next);
+    }
+  });
+
+  router.get("/auth/gmail/profile", async (_request, response, next) => {
+    try {
+      response.json(await gmailProfileService.getProfile());
     } catch (error) {
       handleGmailAuthError(error, response, next);
     }
@@ -35,10 +75,19 @@ export function gmailAuthRoutes(gmailAuthService: GmailAuthService): Router {
 
 function readCode(code: unknown): string {
   if (typeof code !== "string" || code.length === 0) {
-    throw new GmailAuthConfigurationError("Missing OAuth authorization code.");
+    throw new GmailAuthRequestError("Missing OAuth authorization code.");
   }
 
   return code;
+}
+
+function toStatusResponse(storedToken: StoredGmailToken) {
+  return {
+    connected: true,
+    provider: "gmail",
+    scope: storedToken.scope,
+    expiresAt: storedToken.expiryDate ? new Date(storedToken.expiryDate).toISOString() : undefined
+  };
 }
 
 function handleGmailAuthError(
@@ -48,6 +97,20 @@ function handleGmailAuthError(
 ): void {
   if (error instanceof GmailAuthConfigurationError) {
     response.status(400).json({
+      error: error.message
+    });
+    return;
+  }
+
+  if (error instanceof GmailAuthRequestError) {
+    response.status(400).json({
+      error: error.message
+    });
+    return;
+  }
+
+  if (error instanceof GmailAuthNotConnectedError) {
+    response.status(401).json({
       error: error.message
     });
     return;

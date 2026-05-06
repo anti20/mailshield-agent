@@ -13,8 +13,8 @@ MailShield Agent will be built in small commit-friendly steps.
 7. Complete: Static Threat Agent preview
 8. Complete: macOS Static Threat Agent preview UI
 9. Complete: Gmail OAuth preparation
-10. Next: Token persistence and Gmail profile test endpoint
-11. Gmail message fetch preparation
+10. Complete: Gmail token persistence and profile test endpoint
+11. Next: Fetch recent Gmail message metadata
 12. OpenAI Agents SDK workflow
 13. MCP tool layer
 14. Notifications

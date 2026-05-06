@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import type { StoredGmailToken } from "../storage/GmailTokenStore.js";
 
 export type GmailAuthConfig = {
   clientId?: string;
@@ -15,10 +16,25 @@ export type GmailTokenMetadata = {
   tokenType?: string;
 };
 
+export type GmailOAuthToken = {
+  accessToken?: string;
+  refreshToken?: string;
+  expiryDate?: number;
+  scope?: string;
+  tokenType?: string;
+};
+
 export class GmailAuthConfigurationError extends Error {
   constructor(message = "Missing Gmail OAuth configuration.") {
     super(message);
     this.name = "GmailAuthConfigurationError";
+  }
+}
+
+export class GmailAuthRequestError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "GmailAuthRequestError";
   }
 }
 
@@ -36,17 +52,41 @@ export class GmailAuthService {
     });
   }
 
-  async exchangeCodeForTokenMetadata(code: string): Promise<GmailTokenMetadata> {
+  async exchangeCodeForTokens(code: string): Promise<GmailOAuthToken> {
     const client = this.createClient();
     const { tokens } = await client.getToken(code);
 
     return {
-      hasAccessToken: Boolean(tokens.access_token),
-      hasRefreshToken: Boolean(tokens.refresh_token),
+      accessToken: tokens.access_token ?? undefined,
+      refreshToken: tokens.refresh_token ?? undefined,
       expiryDate: tokens.expiry_date ?? undefined,
       scope: tokens.scope ?? undefined,
       tokenType: tokens.token_type ?? undefined
     };
+  }
+
+  toSafeTokenMetadata(token: GmailOAuthToken | StoredGmailToken): GmailTokenMetadata {
+    return {
+      hasAccessToken: Boolean(token.accessToken),
+      hasRefreshToken: Boolean(token.refreshToken),
+      expiryDate: token.expiryDate,
+      scope: token.scope,
+      tokenType: token.tokenType
+    };
+  }
+
+  createAuthorizedClient(token: StoredGmailToken) {
+    const client = this.createClient();
+
+    client.setCredentials({
+      access_token: token.accessToken,
+      refresh_token: token.refreshToken,
+      expiry_date: token.expiryDate,
+      scope: token.scope,
+      token_type: token.tokenType
+    });
+
+    return client;
   }
 
   private createClient() {

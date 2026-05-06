@@ -32,6 +32,7 @@ Step 6 complete: the backend persists scan history in local SQLite.
 Step 7 complete: the backend exposes a rule-based Static Threat Agent preview.
 Step 8 complete: the macOS dashboard can run and display the Static Threat Agent preview.
 Step 9 complete: the backend prepares a readonly Gmail OAuth flow.
+Step 10 complete: Gmail OAuth token persistence and profile test endpoint are in place.
 
 ## Documentation
 
@@ -60,7 +61,7 @@ The backend uses SQLite for local scan history at:
 apps/core/data/mailshield.sqlite
 ```
 
-On startup, the backend initializes the database and seeds the current mock scan results only when the database is empty. `GET /scan-results` returns scan results from SQLite. The database can also store seen Gmail message IDs for future Gmail polling, but Gmail is not connected yet.
+On startup, the backend initializes the database and seeds the current mock scan results only when the database is empty. `GET /scan-results` returns scan results from SQLite. The database can also store seen Gmail message IDs for future Gmail polling and local Gmail OAuth token data for development.
 
 ```text
 GET http://localhost:3000/health
@@ -108,9 +109,11 @@ The backend also prepares a Gmail OAuth flow:
 ```text
 GET http://localhost:3000/auth/gmail/start
 GET http://localhost:3000/auth/gmail/callback
+GET http://localhost:3000/auth/gmail/status
+GET http://localhost:3000/auth/gmail/profile
 ```
 
-Configure `apps/core/.env` from `apps/core/.env.example` before starting OAuth. The intended Gmail scope is readonly access only: `https://www.googleapis.com/auth/gmail.readonly`. The callback returns safe token metadata only; full tokens are not logged or returned, token persistence is not complete, and real Gmail message fetching is not implemented yet. See [Setup](docs/setup.md) for the full local Google Cloud setup steps.
+Configure `apps/core/.env` from `apps/core/.env.example` before starting OAuth. The intended Gmail scope is readonly access only: `https://www.googleapis.com/auth/gmail.readonly`. The callback persists Gmail OAuth tokens in local SQLite for development and returns safe metadata only. Full tokens are not logged or returned. `GET /auth/gmail/status` returns safe connection metadata, and `GET /auth/gmail/profile` verifies the Gmail API connection with safe profile data. Real Gmail message fetching and Gmail scanning are not implemented yet. See [Setup](docs/setup.md) for the full local Google Cloud setup steps.
 
 Open and run the macOS app in Xcode:
 
@@ -136,4 +139,4 @@ To verify the Static Threat Agent preview UI:
 
 The macOS app uses `URLSession` to call `GET /scan-preview`. The backend runs `StaticThreatAgent` against mock normalized emails, and the UI shows passed, warning, and failed check counts plus per-check reason and evidence. Preview results are not persisted and do not use Gmail, OpenAI Agents SDK, or MCP.
 
-Gmail OAuth is prepared, but Gmail message fetching is not implemented yet. OpenAI Agents SDK and MCP integration do not exist yet.
+Gmail OAuth and profile testing are prepared, but Gmail message fetching and scanning are not implemented yet. OpenAI Agents SDK and MCP integration do not exist yet.

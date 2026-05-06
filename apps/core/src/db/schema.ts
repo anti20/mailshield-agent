@@ -31,6 +31,18 @@ export function initializeSchema(database: Database.Database): void {
       seenAt TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS gmail_auth_tokens (
+      id TEXT PRIMARY KEY,
+      providerAccount TEXT NOT NULL UNIQUE,
+      accessToken TEXT,
+      refreshToken TEXT,
+      scope TEXT,
+      tokenType TEXT,
+      expiryDate INTEGER,
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_agent_checks_scan_result_id
       ON agent_checks(scanResultId);
 

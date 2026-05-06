@@ -4,13 +4,17 @@ import { healthRoutes } from "./routes/healthRoutes.js";
 import { scanPreviewRoutes } from "./routes/scanPreviewRoutes.js";
 import { scanResultRoutes } from "./routes/scanResultRoutes.js";
 import type { GmailAuthService } from "./gmail/GmailAuthService.js";
+import type { GmailProfileService } from "./gmail/GmailProfileService.js";
 import type { ScanPipeline } from "./services/ScanPipeline.js";
+import type { GmailTokenStore } from "./storage/GmailTokenStore.js";
 import type { ScanStore } from "./storage/ScanStore.js";
 
 export function createApp(
   scanStore: ScanStore,
   scanPipeline: ScanPipeline,
-  gmailAuthService: GmailAuthService
+  gmailAuthService: GmailAuthService,
+  gmailTokenStore: GmailTokenStore,
+  gmailProfileService: GmailProfileService
 ) {
   const app = express();
 
@@ -18,7 +22,7 @@ export function createApp(
   app.use(healthRoutes);
   app.use(scanResultRoutes(scanStore));
   app.use(scanPreviewRoutes(scanPipeline));
-  app.use(gmailAuthRoutes(gmailAuthService));
+  app.use(gmailAuthRoutes(gmailAuthService, gmailTokenStore, gmailProfileService));
   app.use(handleError);
 
   return app;

@@ -2,9 +2,9 @@
 
 ## Current Status
 
-Step 9 prepares readonly Gmail OAuth endpoints in the TypeScript backend.
+Step 10 persists Gmail OAuth tokens locally and adds a Gmail profile test endpoint.
 
-Gmail message fetching, OpenAI configuration, and MCP setup do not exist yet.
+Gmail message fetching, Gmail scanning, OpenAI configuration, and MCP setup do not exist yet.
 
 ## Codex Setup
 
@@ -39,13 +39,13 @@ npm run dev
 
 The backend is a TypeScript Node project. It uses Express as the HTTP server and listens on port `3000` by default.
 
-The backend stores local scan history in SQLite at:
+The backend stores local scan history and local development Gmail OAuth token data in SQLite at:
 
 ```text
 apps/core/data/mailshield.sqlite
 ```
 
-The database is created automatically on backend startup. Mock scan results are seeded only when the database is empty, and `GET /scan-results` returns scan results from SQLite.
+The database is created automatically on backend startup. Mock scan results are seeded only when the database is empty, and `GET /scan-results` returns scan results from SQLite. Gmail OAuth tokens are stored in the `gmail_auth_tokens` table for local development only; production should use stronger secure storage later.
 
 Verify the health endpoint:
 
@@ -103,7 +103,7 @@ Expected response shape:
 
 ## Gmail OAuth Setup
 
-Gmail OAuth is prepared in the TypeScript backend, but real Gmail message fetching is not implemented yet. Token persistence is not complete yet, and full access tokens or refresh tokens must not be logged or returned in responses.
+Gmail OAuth is prepared in the TypeScript backend, and OAuth tokens are persisted locally in SQLite for development. Real Gmail message fetching and Gmail scanning are not implemented yet. Full access tokens or refresh tokens must not be logged or returned in responses.
 
 1. Create or use a Google Cloud project.
 2. Enable the Gmail API.
@@ -149,7 +149,59 @@ npm run dev
 http://localhost:3000/auth/gmail/start
 ```
 
-`GET /auth/gmail/start` begins the OAuth flow and redirects to Google. `GET /auth/gmail/callback` handles the OAuth callback and returns safe token metadata only when configuration is present. This OAuth preparation does not use OpenAI Agents SDK or MCP.
+`GET /auth/gmail/start` begins the OAuth flow and redirects to Google. `GET /auth/gmail/callback` handles the OAuth callback, stores token data in the local `gmail_auth_tokens` SQLite table, and returns safe token metadata only when configuration is present. This OAuth flow does not use OpenAI Agents SDK or MCP.
+
+## Test Gmail Connection
+
+1. Start the backend:
+
+```bash
+cd apps/core
+npm run dev
+```
+
+2. Open the OAuth start endpoint:
+
+```text
+http://localhost:3000/auth/gmail/start
+```
+
+3. Complete Google OAuth in the browser.
+4. Open the Gmail status endpoint:
+
+```text
+http://localhost:3000/auth/gmail/status
+```
+
+Expected connected response shape:
+
+```json
+{
+  "connected": true,
+  "provider": "gmail",
+  "scope": "https://www.googleapis.com/auth/gmail.readonly",
+  "expiresAt": "2026-05-06T12:00:00.000Z"
+}
+```
+
+5. Open the Gmail profile test endpoint:
+
+```text
+http://localhost:3000/auth/gmail/profile
+```
+
+Expected response shape:
+
+```json
+{
+  "emailAddress": "person@example.com",
+  "messagesTotal": 123,
+  "threadsTotal": 45,
+  "historyId": "123456"
+}
+```
+
+`GET /auth/gmail/status` returns safe connection metadata only. `GET /auth/gmail/profile` verifies the Gmail API connection and returns safe profile data only. If the access token expires and a refresh token is available, the backend attempts to refresh it and update local storage. Real Gmail message fetching and scanning are planned later.
 
 ## Reset Local Data
 
@@ -159,7 +211,7 @@ Stop the backend, then delete the local SQLite file:
 rm apps/core/data/mailshield.sqlite
 ```
 
-The next backend startup recreates the database and seeds the mock scan results again because the database is empty.
+The next backend startup recreates the database and seeds the mock scan results again because the database is empty. This also resets local Gmail auth because the `gmail_auth_tokens` table lives in the same SQLite file.
 
 ## Run Both Parts Together
 
@@ -183,6 +235,6 @@ The Static Threat Agent preview UI should show mock normalized emails with passe
 
 The backend must be running before loading scans or running the static preview. If `GET /scan-results` or `GET /scan-preview` fails, the dashboard shows a simple error message.
 
-Gmail OAuth is prepared, but Gmail message fetching is not implemented yet. OpenAI Agents SDK and MCP integration do not exist yet.
+Gmail OAuth tokens are persisted locally for development and the Gmail profile endpoint can verify the Gmail API connection. Gmail message fetching and scanning are not implemented yet. OpenAI Agents SDK and MCP integration do not exist yet.
 
 The mock scan results are persisted in local SQLite after seeding. Static preview results are not persisted. Neither flow uses Gmail, OpenAI Agents SDK, or MCP yet.
