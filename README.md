@@ -34,6 +34,7 @@ Step 8 complete: the macOS dashboard can run and display the Static Threat Agent
 Step 9 complete: the backend prepares a readonly Gmail OAuth flow.
 Step 10 complete: Gmail OAuth token persistence and profile test endpoint are in place.
 Step 11 complete: the backend can fetch recent Gmail message metadata.
+Step 12 complete: the backend can convert one Gmail message into `NormalizedEmail`.
 
 ## Documentation
 
@@ -113,11 +114,14 @@ GET http://localhost:3000/auth/gmail/callback
 GET http://localhost:3000/auth/gmail/status
 GET http://localhost:3000/auth/gmail/profile
 GET http://localhost:3000/gmail/messages/recent
+GET http://localhost:3000/gmail/messages/:id/normalized
 ```
 
 Configure `apps/core/.env` from `apps/core/.env.example` before starting OAuth. The intended Gmail scope is readonly access only: `https://www.googleapis.com/auth/gmail.readonly`. The callback persists Gmail OAuth tokens in local SQLite for development and returns safe metadata only. Full tokens are not logged or returned. `GET /auth/gmail/status` returns safe connection metadata, and `GET /auth/gmail/profile` verifies the Gmail API connection with safe profile data.
 
 `GET /gmail/messages/recent` uses the stored Gmail OAuth token to fetch recent Gmail message metadata. Returned messages are normalized to id, thread id, subject, sender, snippet, received time, labels, and attachment presence. Attachment contents are not downloaded. Gmail email scanning is still not implemented. See [Setup](docs/setup.md) for the full local Google Cloud setup steps.
+
+`GET /gmail/messages/:id/normalized` uses the stored Gmail OAuth token to fetch one real Gmail message and convert it into the existing `NormalizedEmail` shape (subject, sender, optional reply-to, text/html body when available, links, attachment metadata, and received time). Attachment contents are not downloaded, and the normalized email is not scanned or persisted yet. OpenAI Agents SDK and MCP are still not implemented.
 
 Open and run the macOS app in Xcode:
 

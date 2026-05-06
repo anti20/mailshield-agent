@@ -26,6 +26,17 @@ export function gmailMessageRoutes(gmailMessageService: GmailMessageService): Ro
     }
   });
 
+  router.get("/gmail/messages/:id/normalized", async (request, response, next) => {
+    try {
+      const messageId = readMessageId(request.params.id);
+      const item = await gmailMessageService.getNormalizedMessage(messageId);
+
+      response.json({ item });
+    } catch (error) {
+      handleGmailMessageError(error, response, next);
+    }
+  });
+
   return router;
 }
 
@@ -45,6 +56,14 @@ function readLimit(limit: unknown): number {
   }
 
   return Math.min(parsedLimit, maxLimit);
+}
+
+function readMessageId(messageId: unknown): string {
+  if (typeof messageId !== "string" || messageId.trim().length === 0) {
+    throw new GmailMessageRequestError("message id must be a non-empty string.");
+  }
+
+  return messageId.trim();
 }
 
 function handleGmailMessageError(

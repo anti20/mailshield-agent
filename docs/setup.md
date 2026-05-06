@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step 11 fetches recent Gmail message metadata from the connected Gmail account.
+Step 12 converts one Gmail message from the connected account into `NormalizedEmail`.
 
 Gmail scanning, OpenAI configuration, and MCP setup do not exist yet.
 
@@ -103,7 +103,7 @@ Expected response shape:
 
 ## Gmail OAuth Setup
 
-Gmail OAuth is implemented in the TypeScript backend, and OAuth tokens are persisted locally in SQLite for development. Recent Gmail message metadata fetching is implemented through `GET /gmail/messages/recent`, but Gmail scanning is not implemented yet. Full access tokens or refresh tokens must not be logged or returned in responses.
+Gmail OAuth is implemented in the TypeScript backend, and OAuth tokens are persisted locally in SQLite for development. Recent Gmail message metadata fetching is implemented through `GET /gmail/messages/recent`, and one-message normalization is implemented through `GET /gmail/messages/:id/normalized`. Gmail scanning is not implemented yet. Full access tokens or refresh tokens must not be logged or returned in responses.
 
 1. Create or use a Google Cloud project.
 2. Enable the Gmail API.
@@ -232,6 +232,35 @@ curl "http://localhost:3000/gmail/messages/recent?limit=5"
 
 `GET /gmail/messages/recent` fetches recent Gmail message metadata with the stored Gmail OAuth token. The default limit is `10`, and the maximum limit is `25`. Returned messages are normalized before leaving the backend and include id, thread id, subject, sender, snippet, received time, label IDs, and whether attachments are present. Attachment contents are not downloaded, fetched messages are not persisted in this step, Gmail email scanning is not implemented yet, and this step does not use OpenAI Agents SDK or MCP.
 
+## Test One Normalized Gmail Message
+
+1. Start the backend:
+
+```bash
+cd apps/core
+npm run dev
+```
+
+2. Complete Gmail OAuth if needed:
+
+```text
+http://localhost:3000/auth/gmail/start
+```
+
+3. Fetch recent message metadata to get an id:
+
+```bash
+curl http://localhost:3000/gmail/messages/recent
+```
+
+4. Fetch one normalized message:
+
+```bash
+curl http://localhost:3000/gmail/messages/<gmail-message-id>/normalized
+```
+
+`GET /gmail/messages/:id/normalized` uses the stored Gmail OAuth token to fetch one real Gmail message and convert it into the existing `NormalizedEmail` format that prepares Gmail input for `StaticThreatAgent`. The response includes subject, sender, optional reply-to, body text/html when available, extracted links, attachment metadata, and received time. Attachment contents are not downloaded, the normalized email is not scanned yet, it is not persisted yet, and this step does not use OpenAI Agents SDK or MCP.
+
 ## Reset Local Data
 
 Stop the backend, then delete the local SQLite file:
@@ -264,6 +293,6 @@ The Static Threat Agent preview UI should show mock normalized emails with passe
 
 The backend must be running before loading scans or running the static preview. If `GET /scan-results` or `GET /scan-preview` fails, the dashboard shows a simple error message.
 
-Gmail OAuth tokens are persisted locally for development, the Gmail profile endpoint can verify the Gmail API connection, and recent Gmail message metadata can be fetched. Gmail scanning is not implemented yet. OpenAI Agents SDK and MCP integration do not exist yet.
+Gmail OAuth tokens are persisted locally for development, the Gmail profile endpoint can verify the Gmail API connection, recent Gmail message metadata can be fetched, and one message can be converted into `NormalizedEmail`. Gmail scanning is not implemented yet. OpenAI Agents SDK and MCP integration do not exist yet.
 
 The mock scan results are persisted in local SQLite after seeding. Static preview results are not persisted. Neither flow uses Gmail, OpenAI Agents SDK, or MCP yet.
