@@ -4,7 +4,7 @@ MailShield Core is the local TypeScript backend for MailShield Agent.
 
 ## Current Status
 
-The backend currently exposes a health endpoint, SQLite-backed mock email scan results, a rule-based Static Threat Agent preview, readonly Gmail OAuth endpoints, local token persistence, and a Gmail profile test endpoint.
+The backend currently exposes a health endpoint, SQLite-backed mock email scan results, a rule-based Static Threat Agent preview, readonly Gmail OAuth endpoints, local token persistence, a Gmail profile test endpoint, and recent Gmail message metadata fetching.
 
 ## Setup
 
@@ -81,6 +81,20 @@ Verify the Gmail profile endpoint after OAuth:
 curl http://localhost:3000/auth/gmail/profile
 ```
 
-`GET /auth/gmail/status` returns safe connection metadata. `GET /auth/gmail/profile` verifies the Gmail API connection with safe profile data. Gmail message fetching and scanning are not implemented yet. This does not use OpenAI or MCP.
+`GET /auth/gmail/status` returns safe connection metadata. `GET /auth/gmail/profile` verifies the Gmail API connection with safe profile data.
+
+Fetch recent Gmail message metadata after OAuth:
+
+```bash
+curl http://localhost:3000/gmail/messages/recent
+```
+
+Optionally limit the result count:
+
+```bash
+curl "http://localhost:3000/gmail/messages/recent?limit=5"
+```
+
+`GET /gmail/messages/recent` uses the stored Gmail OAuth token and returns normalized message metadata only. Attachment contents are not downloaded. Gmail scanning is not implemented yet. This does not use OpenAI or MCP.
 
 To reset local data, stop the backend and delete `apps/core/data/mailshield.sqlite`.

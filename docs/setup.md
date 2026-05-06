@@ -2,9 +2,9 @@
 
 ## Current Status
 
-Step 10 persists Gmail OAuth tokens locally and adds a Gmail profile test endpoint.
+Step 11 fetches recent Gmail message metadata from the connected Gmail account.
 
-Gmail message fetching, Gmail scanning, OpenAI configuration, and MCP setup do not exist yet.
+Gmail scanning, OpenAI configuration, and MCP setup do not exist yet.
 
 ## Codex Setup
 
@@ -201,7 +201,36 @@ Expected response shape:
 }
 ```
 
-`GET /auth/gmail/status` returns safe connection metadata only. `GET /auth/gmail/profile` verifies the Gmail API connection and returns safe profile data only. If the access token expires and a refresh token is available, the backend attempts to refresh it and update local storage. Real Gmail message fetching and scanning are planned later.
+`GET /auth/gmail/status` returns safe connection metadata only. `GET /auth/gmail/profile` verifies the Gmail API connection and returns safe profile data only. If the access token expires and a refresh token is available, the backend attempts to refresh it and update local storage. Real Gmail message scanning is planned later.
+
+## Test Recent Gmail Messages
+
+1. Start the backend:
+
+```bash
+cd apps/core
+npm run dev
+```
+
+2. Complete Gmail OAuth if needed:
+
+```text
+http://localhost:3000/auth/gmail/start
+```
+
+3. Open or curl the recent messages endpoint:
+
+```bash
+curl http://localhost:3000/gmail/messages/recent
+```
+
+4. Optionally request a smaller page:
+
+```bash
+curl "http://localhost:3000/gmail/messages/recent?limit=5"
+```
+
+`GET /gmail/messages/recent` fetches recent Gmail message metadata with the stored Gmail OAuth token. The default limit is `10`, and the maximum limit is `25`. Returned messages are normalized before leaving the backend and include id, thread id, subject, sender, snippet, received time, label IDs, and whether attachments are present. Attachment contents are not downloaded, fetched messages are not persisted in this step, Gmail email scanning is not implemented yet, and this step does not use OpenAI Agents SDK or MCP.
 
 ## Reset Local Data
 
@@ -235,6 +264,6 @@ The Static Threat Agent preview UI should show mock normalized emails with passe
 
 The backend must be running before loading scans or running the static preview. If `GET /scan-results` or `GET /scan-preview` fails, the dashboard shows a simple error message.
 
-Gmail OAuth tokens are persisted locally for development and the Gmail profile endpoint can verify the Gmail API connection. Gmail message fetching and scanning are not implemented yet. OpenAI Agents SDK and MCP integration do not exist yet.
+Gmail OAuth tokens are persisted locally for development, the Gmail profile endpoint can verify the Gmail API connection, and recent Gmail message metadata can be fetched. Gmail scanning is not implemented yet. OpenAI Agents SDK and MCP integration do not exist yet.
 
 The mock scan results are persisted in local SQLite after seeding. Static preview results are not persisted. Neither flow uses Gmail, OpenAI Agents SDK, or MCP yet.

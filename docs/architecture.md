@@ -15,7 +15,7 @@ MailShield Agent is planned as a local-first macOS email safety assistant. The s
 
 The current implementation includes a native SwiftUI macOS menu bar app in `apps/macos`. It shows a menu bar item, can open a dashboard window, checks backend health, loads mock scan results into a recent scans UI, and visualizes Static Threat Agent preview checks.
 
-The current backend skeleton lives in `apps/core`. It is a local TypeScript Node project that uses Express as the HTTP server on local port `3000`, SQLite for local scan history and local development Gmail OAuth token storage, and prepared Gmail profile testing.
+The current backend skeleton lives in `apps/core`. It is a local TypeScript Node project that uses Express as the HTTP server on local port `3000`, SQLite for local scan history and local development Gmail OAuth token storage, Gmail profile testing, and recent Gmail message metadata fetching.
 
 ## Current Backend Routes
 
@@ -26,8 +26,9 @@ The current backend skeleton lives in `apps/core`. It is a local TypeScript Node
 - `GET /auth/gmail/callback`: handles the prepared Gmail OAuth callback.
 - `GET /auth/gmail/status`: returns safe Gmail connection metadata.
 - `GET /auth/gmail/profile`: verifies the Gmail API connection with safe profile data.
+- `GET /gmail/messages/recent`: fetches recent Gmail message metadata.
 
-The scan result model includes per-agent checks. Each check has a `passed`, `warning`, or `failed` status, plus a reason and optional evidence. The backend seeds the current mock scan results into SQLite only when the database is empty. Gmail OAuth tokens are persisted locally, but Gmail message fetching and scanning are not implemented yet. The backend does not use OpenAI Agents SDK or MCP yet.
+The scan result model includes per-agent checks. Each check has a `passed`, `warning`, or `failed` status, plus a reason and optional evidence. The backend seeds the current mock scan results into SQLite only when the database is empty. Gmail OAuth tokens are persisted locally, and recent Gmail message metadata can be fetched. Gmail email scanning is not implemented yet. The backend does not use OpenAI Agents SDK or MCP yet.
 
 ## Current Gmail OAuth Preparation
 
@@ -90,7 +91,24 @@ GmailProfileService
 Gmail API users.getProfile
 ```
 
-If the access token is expired and a refresh token exists, the profile service attempts to refresh credentials through the Google client and update local token storage. This is local development storage only; production should use stronger secure storage later. Real Gmail message fetching and scanning are planned next.
+If the access token is expired and a refresh token exists, the profile service attempts to refresh credentials through the Google client and update local token storage. This is local development storage only; production should use stronger secure storage later.
+
+The Gmail message metadata flow is:
+
+```text
+GET /gmail/messages/recent
+  |
+  v
+GmailMessageService
+  |
+  v
+Gmail API users.messages.list
+  |
+  v
+Gmail API users.messages.get
+```
+
+`GET /gmail/messages/recent` uses the stored Gmail OAuth token. `GmailMessageService` first lists recent message ids with `users.messages.list`, then reads each message with `users.messages.get` and a constrained fields projection for headers, snippet, labels, internal date, and attachment metadata. The response is normalized before returning to the app, so raw Gmail API responses are not exposed directly. Attachment contents are not downloaded, attachment files are not downloaded, fetched messages are not persisted in this step, and Gmail email scanning will be added later.
 
 ## Current Static Threat Agent
 
@@ -212,4 +230,4 @@ Local TypeScript/Express backend
 
 ## Notes
 
-Gmail OAuth token persistence and profile testing are prepared, but Gmail message fetching and scanning will be added in a later step. OpenAI Agents SDK workflow, MCP tool layer, and notifications will also be added later. Mock scan results are persisted locally after seeding, but Static Threat Agent preview results are not persisted.
+Gmail OAuth token persistence, profile testing, and recent message metadata fetching are prepared, but Gmail email scanning will be added in a later step. OpenAI Agents SDK workflow, MCP tool layer, and notifications will also be added later. Mock scan results are persisted locally after seeding, but Static Threat Agent preview results are not persisted.

@@ -14,7 +14,7 @@ MailShield Agent differs by emphasizing explainable per-agent checks instead of 
 
 A later backend will connect to Gmail, run scan workflows, coordinate threat analysis through the OpenAI Agents SDK, expose controlled actions through MCP, and store scan history locally.
 
-Gmail is the first planned real mailbox provider. The backend now has a real Gmail account connection foundation: readonly OAuth, local development token persistence, and a Gmail profile test endpoint. It does not fetch Gmail messages or scan real Gmail content yet.
+Gmail is the first planned real mailbox provider. The backend now has real Gmail metadata access: readonly OAuth, local development token persistence, a Gmail profile test endpoint, and recent message metadata fetching. It does not scan real Gmail content yet.
 
 ## Planned Extensions
 
@@ -31,4 +31,4 @@ MailShield Agent is intended to combine a focused macOS menu bar experience with
 
 ## Current Limitation
 
-The current app is still a local shell and backend demo. The backend returns mock scan result data from SQLite, and the macOS app displays those results through `URLSession` calls to `GET /scan-results`. The macOS app also calls `GET /scan-preview` to show deterministic checks against mock normalized emails. Gmail account connection can be tested through OAuth and the Gmail profile endpoint, but Gmail email fetching and scanning do not work yet. No OpenAI Agents SDK workflow, MCP integration, or notifications integration exists yet.
+The current app is still a local shell and backend demo. The backend returns mock scan result data from SQLite, and the macOS app displays those results through `URLSession` calls to `GET /scan-results`. The macOS app also calls `GET /scan-preview` to show deterministic checks against mock normalized emails. Gmail account connection and recent metadata access can be tested, but Gmail threat scanning does not work yet. No OpenAI Agents SDK workflow, MCP integration, or notifications integration exists yet.

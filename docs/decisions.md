@@ -36,3 +36,6 @@
 - Token values are never logged or returned in API responses.
 - Gmail profile testing comes before message fetching so the API connection can be verified without reading message content.
 - Production Gmail token storage should use stronger secure storage than the current local development SQLite table.
+- Gmail message metadata is fetched before full email scanning.
+- Raw Gmail API responses are not exposed directly; backend responses are normalized first.
+- Attachment contents and attachment files are not downloaded in the metadata fetching step.
