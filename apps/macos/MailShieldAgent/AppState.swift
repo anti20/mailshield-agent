@@ -49,6 +49,8 @@ final class AppState: ObservableObject {
             if oldValue != selectedGmailMessageID {
                 selectedGmailMessageScan = nil
                 selectedGmailMessageScanErrorMessage = nil
+                selectedGmailMessageAgentScan = nil
+                selectedGmailMessageAgentScanErrorMessage = nil
             }
         }
     }
@@ -57,6 +59,9 @@ final class AppState: ObservableObject {
     @Published private(set) var selectedGmailMessageScan: GmailStaticScanResponse?
     @Published private(set) var isLoadingSelectedGmailMessageScan = false
     @Published private(set) var selectedGmailMessageScanErrorMessage: String?
+    @Published private(set) var selectedGmailMessageAgentScan: GmailAgentScanResponse?
+    @Published private(set) var isLoadingSelectedGmailMessageAgentScan = false
+    @Published private(set) var selectedGmailMessageAgentScanErrorMessage: String?
 
     private let backendClient: BackendClient
 
@@ -242,6 +247,8 @@ final class AppState: ObservableObject {
 
             selectedGmailMessageScan = nil
             selectedGmailMessageScanErrorMessage = nil
+            selectedGmailMessageAgentScan = nil
+            selectedGmailMessageAgentScanErrorMessage = nil
         } catch {
             recentGmailMessagesErrorMessage = error.localizedDescription
         }
@@ -267,5 +274,25 @@ final class AppState: ObservableObject {
         }
 
         isLoadingSelectedGmailMessageScan = false
+    }
+
+    func runAgentScanForSelectedGmailMessage() async {
+        guard let selectedGmailMessage else {
+            selectedGmailMessageAgentScanErrorMessage = "Select a Gmail message first."
+            return
+        }
+
+        isLoadingSelectedGmailMessageAgentScan = true
+        selectedGmailMessageAgentScanErrorMessage = nil
+
+        do {
+            selectedGmailMessageAgentScan = try await backendClient.fetchGmailAgentScan(
+                messageId: selectedGmailMessage.id
+            )
+        } catch {
+            selectedGmailMessageAgentScanErrorMessage = error.localizedDescription
+        }
+
+        isLoadingSelectedGmailMessageAgentScan = false
     }
 }

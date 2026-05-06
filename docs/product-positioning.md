@@ -12,9 +12,9 @@ The macOS app can now demonstrate the planned explainable threat review UI with 
 
 MailShield Agent differs by emphasizing explainable per-agent checks instead of only a single opaque risk label. The app now demonstrates visible per-check explainability for deterministic local checks from the rule-based Static Threat Agent, including passed, warning, and failed outcomes with reasons and evidence. That is a concrete differentiator from black-box phishing warnings.
 
-A later backend will connect to Gmail, run scan workflows, coordinate threat analysis through the OpenAI Agents SDK, expose controlled actions through MCP, and store scan history locally.
+The backend now connects to Gmail, runs deterministic scan workflows, and can run the first OpenAI-powered agent chain for one selected Gmail message. A later backend will expose controlled actions through MCP and store agent scan history locally.
 
-Gmail is the first planned real mailbox provider. The backend now has real Gmail metadata access: readonly OAuth, local development token persistence, a Gmail profile test endpoint, and recent message metadata fetching. It does not scan real Gmail content yet.
+Gmail is the first planned real mailbox provider. The backend now has real Gmail metadata access: readonly OAuth, local development token persistence, a Gmail profile test endpoint, recent message metadata fetching, selected-message static scanning, and selected-message AI agent scanning.
 
 ## Planned Extensions
 
@@ -31,4 +31,4 @@ MailShield Agent is intended to combine a focused macOS menu bar experience with
 
 ## Current Limitation
 
-The current app is still a local shell and backend demo. The backend returns mock scan result data from SQLite, and the macOS app displays those results through `URLSession` calls to `GET /scan-results`. The macOS app also calls `GET /scan-preview` to show deterministic checks against mock normalized emails. Gmail account connection and recent metadata access can be tested, but Gmail threat scanning does not work yet. No OpenAI Agents SDK workflow, MCP integration, or notifications integration exists yet.
+The current app is still an early local workflow. The backend returns mock scan result data from SQLite, and the macOS app displays those results through `URLSession` calls to `GET /scan-results`. The macOS app also calls `GET /scan-preview` to show deterministic checks against mock normalized emails. Gmail account connection, recent metadata access, selected-message static scanning, and selected-message OpenAI agent scanning can be tested. Agent scan results are not persisted yet. MCP integration and notifications do not exist yet.

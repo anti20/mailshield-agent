@@ -4,7 +4,9 @@ import {
   GmailMessageNotFoundError
 } from "../gmail/GmailMessageService.js";
 import { GmailAuthNotConnectedError } from "../gmail/GmailProfileService.js";
+import { OpenAIConfigurationError } from "../services/GmailAgentScanService.js";
 import type { GmailMessageService } from "../gmail/GmailMessageService.js";
+import type { GmailAgentScanService } from "../services/GmailAgentScanService.js";
 import type { GmailStaticScanService } from "../services/GmailStaticScanService.js";
 
 const defaultLimit = 10;
@@ -19,7 +21,8 @@ class GmailMessageRequestError extends Error {
 
 export function gmailMessageRoutes(
   gmailMessageService: GmailMessageService,
-  gmailStaticScanService: GmailStaticScanService
+  gmailStaticScanService: GmailStaticScanService,
+  gmailAgentScanService: GmailAgentScanService
 ): Router {
   const router = Router();
 
@@ -49,6 +52,28 @@ export function gmailMessageRoutes(
     try {
       const messageId = readMessageId(request.params.id);
       const result = await gmailStaticScanService.scanMessage(messageId);
+
+      response.json(result);
+    } catch (error) {
+      handleGmailMessageError(error, response, next);
+    }
+  });
+
+  router.post("/gmail/messages/:id/agent-scan", async (request, response, next) => {
+    try {
+      const messageId = readMessageId(request.params.id);
+      const result = await gmailAgentScanService.scanMessage(messageId);
+
+      response.json(result);
+    } catch (error) {
+      handleGmailMessageError(error, response, next);
+    }
+  });
+
+  router.get("/gmail/messages/:id/agent-scan", async (request, response, next) => {
+    try {
+      const messageId = readMessageId(request.params.id);
+      const result = await gmailAgentScanService.scanMessage(messageId);
 
       response.json(result);
     } catch (error) {
@@ -113,6 +138,13 @@ function handleGmailMessageError(
 
   if (error instanceof GmailMessageNormalizationError) {
     response.status(422).json({
+      error: error.message
+    });
+    return;
+  }
+
+  if (error instanceof OpenAIConfigurationError) {
+    response.status(400).json({
       error: error.message
     });
     return;

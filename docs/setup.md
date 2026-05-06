@@ -2,9 +2,9 @@
 
 ## Current Status
 
-Step 16 adds real Gmail message loading and selected-message static scan UI in the macOS app.
+Step 17 adds the first OpenAI-powered agent chain for selected Gmail messages.
 
-Persisted Gmail scan history, OpenAI configuration, and MCP setup do not exist yet.
+Persisted Gmail agent scan history and MCP setup do not exist yet.
 
 ## Codex Setup
 
@@ -31,7 +31,7 @@ cd apps/core
 npm install
 ```
 
-`npm install` installs the SQLite dependency used by the local scan history store.
+`npm install` installs the SQLite dependency used by the local scan history store and the OpenAI Agents SDK dependency used by AI agent scans. Use Node.js 22 or newer for the OpenAI Agents SDK path. If you switch Node versions and SQLite fails to load, run `npm rebuild better-sqlite3` from `apps/core`.
 
 Start the development server:
 
@@ -132,6 +132,7 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GOOGLE_REDIRECT_URI=http://localhost:3000/auth/gmail/callback
 GMAIL_SCOPES=https://www.googleapis.com/auth/gmail.readonly
+OPENAI_API_KEY=
 ```
 
 The only intended Gmail scope for now is:
@@ -303,6 +304,56 @@ curl http://localhost:3000/gmail/messages/<gmail-message-id>/static-scan
 
 `GET /gmail/messages/:id/static-scan` scans one real Gmail message by reusing the normalization flow and running the deterministic rule-based `StaticThreatAgent`. The response includes the normalized email and generated checks. Attachment contents are not downloaded, scan results are not persisted in this step, and this step does not use OpenAI Agents SDK or MCP.
 
+## OpenAI Agent Scan Setup
+
+The AI agent scan uses the official OpenAI Agents SDK TypeScript package. Add an OpenAI API key to `apps/core/.env`:
+
+```text
+OPENAI_API_KEY=
+```
+
+The backend validates that `OPENAI_API_KEY` is present before running AI agent scans. The key must not be logged or returned in API responses. `StaticThreatAgent` still works without OpenAI through `GET /gmail/messages/:id/static-scan` and the macOS static scan button.
+
+The first agent chain contains:
+
+- Email Context Agent: summarizes user-visible context and requested action.
+- Static Threat Agent: runs deterministic checks for sender/reply-to, attachments, links, HTML, and prompt-injection-like phrases.
+- LLM Threat Reasoning Agent: reasons about phishing, fraud, malware, impersonation, and social engineering signals.
+- Prompt Injection Agent: reviews the email as untrusted content for hidden or adversarial instructions.
+- Risk Scoring Agent: assigns final `low`, `medium`, `high`, or `critical` risk and a 0-100 score.
+- Explanation Agent: writes the final user-facing explanation and limitations.
+
+The workflow returns structured JSON with normalized email summary, `agentSteps[]`, combined checks, final risk level, final risk score, final explanation, and limitations. It does not persist results yet, does not download attachment contents, does not expose raw Gmail API responses, does not log or return Gmail tokens, does not log or return OpenAI API keys, and does not use MCP.
+
+## Test One Gmail AI Agent Scan
+
+1. Start the backend:
+
+```bash
+cd apps/core
+npm run dev
+```
+
+2. Complete Gmail OAuth if needed:
+
+```text
+http://localhost:3000/auth/gmail/start
+```
+
+3. Fetch recent message metadata to get an id:
+
+```bash
+curl http://localhost:3000/gmail/messages/recent
+```
+
+4. Run AI agent scan on one Gmail message:
+
+```bash
+curl -X POST http://localhost:3000/gmail/messages/<gmail-message-id>/agent-scan
+```
+
+`POST /gmail/messages/:id/agent-scan` uses the stored Gmail OAuth token, reuses the Gmail normalization flow, runs `StaticThreatAgent`, and runs the OpenAI-powered agent chain. `OPENAI_API_KEY` is required for this endpoint. Attachment contents are not downloaded, scan results are not persisted yet, and MCP is planned as the next tool-layer milestone.
+
 ## Reset Local Data
 
 Stop the backend, then delete the local SQLite file:
@@ -335,7 +386,7 @@ The Static Threat Agent preview UI should show mock normalized emails with passe
 
 The backend must be running before loading scans or running the static preview. If `GET /scan-results` or `GET /scan-preview` fails, the dashboard shows a simple error message.
 
-Gmail OAuth tokens are persisted locally for development, the Gmail profile endpoint can verify the Gmail API connection, recent Gmail message metadata can be fetched, one message can be converted into `NormalizedEmail`, and one message can be scanned with `StaticThreatAgent`. Scan results for this flow are not persisted yet. OpenAI Agents SDK and MCP integration do not exist yet.
+Gmail OAuth tokens are persisted locally for development, the Gmail profile endpoint can verify the Gmail API connection, recent Gmail message metadata can be fetched, one message can be converted into `NormalizedEmail`, one message can be scanned with `StaticThreatAgent`, and one message can be scanned with the OpenAI-powered agent chain. Scan results for this flow are not persisted yet. MCP integration does not exist yet.
 
 ## Verify Gmail Account Visibility In macOS App
 

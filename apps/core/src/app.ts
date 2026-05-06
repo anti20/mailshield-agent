@@ -7,6 +7,7 @@ import { scanResultRoutes } from "./routes/scanResultRoutes.js";
 import type { GmailAuthService } from "./gmail/GmailAuthService.js";
 import type { GmailMessageService } from "./gmail/GmailMessageService.js";
 import type { GmailProfileService } from "./gmail/GmailProfileService.js";
+import type { GmailAgentScanService } from "./services/GmailAgentScanService.js";
 import type { GmailStaticScanService } from "./services/GmailStaticScanService.js";
 import type { ScanPipeline } from "./services/ScanPipeline.js";
 import type { GmailTokenStore } from "./storage/GmailTokenStore.js";
@@ -19,7 +20,8 @@ export function createApp(
   gmailTokenStore: GmailTokenStore,
   gmailProfileService: GmailProfileService,
   gmailMessageService: GmailMessageService,
-  gmailStaticScanService: GmailStaticScanService
+  gmailStaticScanService: GmailStaticScanService,
+  gmailAgentScanService: GmailAgentScanService
 ) {
   const app = express();
 
@@ -28,7 +30,7 @@ export function createApp(
   app.use(scanResultRoutes(scanStore));
   app.use(scanPreviewRoutes(scanPipeline));
   app.use(gmailAuthRoutes(gmailAuthService, gmailTokenStore, gmailProfileService));
-  app.use(gmailMessageRoutes(gmailMessageService, gmailStaticScanService));
+  app.use(gmailMessageRoutes(gmailMessageService, gmailStaticScanService, gmailAgentScanService));
   app.use(handleError);
 
   return app;

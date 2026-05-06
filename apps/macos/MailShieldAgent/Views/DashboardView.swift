@@ -63,9 +63,17 @@ struct DashboardView: View {
                             scanResult: appState.selectedGmailMessageScan,
                             isLoading: appState.isLoadingSelectedGmailMessageScan,
                             errorMessage: appState.selectedGmailMessageScanErrorMessage,
+                            agentScanResult: appState.selectedGmailMessageAgentScan,
+                            isLoadingAgentScan: appState.isLoadingSelectedGmailMessageAgentScan,
+                            agentScanErrorMessage: appState.selectedGmailMessageAgentScanErrorMessage,
                             runScanAction: {
                                 Task {
                                     await appState.runStaticScanForSelectedGmailMessage()
+                                }
+                            },
+                            runAgentScanAction: {
+                                Task {
+                                    await appState.runAgentScanForSelectedGmailMessage()
                                 }
                             }
                         )

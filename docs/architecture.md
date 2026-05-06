@@ -14,9 +14,9 @@ MailShield Agent is planned as a local-first macOS email safety assistant. The s
 ## Current Implementation
 
 The current implementation includes a native SwiftUI macOS menu bar app in `apps/macos`. It shows a menu bar item, can open a dashboard window, checks backend health, loads mock scan results into a recent scans UI, and visualizes Static Threat Agent preview checks.
-It also shows Gmail connection status, can open Gmail OAuth login in the default browser, displays the connected Gmail email address when available, loads recent Gmail message metadata, and runs static scan for one selected Gmail message.
+It also shows Gmail connection status, can open Gmail OAuth login in the default browser, displays the connected Gmail email address when available, loads recent Gmail message metadata, runs static scan for one selected Gmail message, and can run an OpenAI-powered AI agent scan for that selected message.
 
-The current backend skeleton lives in `apps/core`. It is a local TypeScript Node project that uses Express as the HTTP server on local port `3000`, SQLite for local scan history and local development Gmail OAuth token storage, Gmail profile testing, recent Gmail message metadata fetching, one-message conversion into `NormalizedEmail`, and one-message static scanning.
+The current backend skeleton lives in `apps/core`. It is a local TypeScript Node project that uses Express as the HTTP server on local port `3000`, SQLite for local scan history and local development Gmail OAuth token storage, Gmail profile testing, recent Gmail message metadata fetching, one-message conversion into `NormalizedEmail`, one-message static scanning, and one-message OpenAI agent scanning.
 
 ## Current Backend Routes
 
@@ -31,8 +31,9 @@ The current backend skeleton lives in `apps/core`. It is a local TypeScript Node
 - `GET /gmail/messages/recent`: fetches recent Gmail message metadata.
 - `GET /gmail/messages/:id/normalized`: fetches one Gmail message and converts it to `NormalizedEmail`.
 - `GET /gmail/messages/:id/static-scan`: runs static checks on one normalized Gmail message.
+- `POST /gmail/messages/:id/agent-scan`: runs the OpenAI-powered agent chain on one normalized Gmail message.
 
-The scan result model includes per-agent checks. Each check has a `passed`, `warning`, or `failed` status, plus a reason and optional evidence. The backend seeds the current mock scan results into SQLite only when the database is empty. Gmail OAuth tokens are persisted locally, recent Gmail message metadata can be fetched, one Gmail message can be converted into `NormalizedEmail`, and one Gmail message can be scanned with deterministic static checks. Scan results for this Gmail flow are not persisted yet. The backend does not use OpenAI Agents SDK or MCP yet.
+The scan result model includes per-agent checks. Each check has a `passed`, `warning`, or `failed` status, plus a reason and optional evidence. The backend seeds the current mock scan results into SQLite only when the database is empty. Gmail OAuth tokens are persisted locally, recent Gmail message metadata can be fetched, one Gmail message can be converted into `NormalizedEmail`, one Gmail message can be scanned with deterministic static checks, and one Gmail message can be scanned with the OpenAI-powered agent chain. Scan results for this Gmail flow are not persisted yet. The backend does not use MCP yet.
 
 ## Current Gmail OAuth Preparation
 
@@ -154,6 +155,44 @@ GmailStaticScanService
 
 `GET /gmail/messages/:id/static-scan` reuses the Gmail normalization flow, then runs the deterministic rule-based `StaticThreatAgent` checks for sender/reply-to mismatch, attachment name patterns, links, risky HTML patterns, and prompt-injection-like phrases. The response includes the normalized email and checks, attachment contents are not downloaded, raw Gmail API responses are not exposed, and scan results are not persisted in this step.
 
+## Current OpenAI Agent Workflow
+
+The first real OpenAI-powered agent chaining workflow uses the official OpenAI Agents SDK TypeScript package. It requires:
+
+```text
+OPENAI_API_KEY
+```
+
+The backend validates that `OPENAI_API_KEY` exists before running AI agent scans. The key is never logged or returned. `StaticThreatAgent` and the existing static scan endpoints still work without OpenAI.
+
+The selected Gmail message AI scan flow is:
+
+```text
+POST /gmail/messages/:id/agent-scan
+  |
+  v
+GmailAgentScanService
+  |
+  +--> GmailMessageService.getNormalizedMessage
+  |      |
+  |      v
+  |    NormalizedEmail
+  |
+  +--> Email Context Agent
+  +--> Static Threat Agent
+  +--> LLM Threat Reasoning Agent
+  +--> Prompt Injection Agent
+  +--> Risk Scoring Agent
+  +--> Explanation Agent
+         |
+         v
+       combined agent scan result
+```
+
+Each step returns structured data. The combined result includes normalized email summary, `agentSteps[]`, combined checks, final risk level, final risk score, final explanation, and limitations. The workflow reuses the existing Gmail normalization flow and `StaticThreatAgent` baseline. It does not persist agent scan results yet, does not download attachment contents, does not expose raw Gmail API responses, does not log or return Gmail tokens, does not log or return OpenAI API keys, and does not use MCP.
+
+MCP is planned as the next tool-layer milestone. In this milestone, agents reason over normalized email content and existing deterministic checks only.
+
 ## Current Static Threat Agent
 
 `StaticThreatAgent` is a deterministic rule-based scanner. It works with `NormalizedEmail`, a provider-neutral email input model that includes subject, sender, optional reply-to, optional text and HTML bodies, links, attachments, and received time.
@@ -187,7 +226,7 @@ The macOS dashboard also calls `http://localhost:3000/scan-results` with `URLSes
 
 The macOS dashboard also calls `http://localhost:3000/scan-preview` with `URLSession` through `BackendClient`. The response is decoded into Swift preview models, stored in `AppState`, and displayed as a Static Threat Agent Preview section. The UI shows passed, warning, and failed check counts for each mock email, and the selected detail view shows per-check reason and evidence when available.
 
-The macOS dashboard also calls `http://localhost:3000/gmail/messages/recent` and `http://localhost:3000/gmail/messages/:id/static-scan` through `BackendClient`. It displays recent Gmail message metadata, allows selecting one message, and shows deterministic `StaticThreatAgent` checks for the selected message.
+The macOS dashboard also calls `http://localhost:3000/gmail/messages/recent`, `http://localhost:3000/gmail/messages/:id/static-scan`, and `http://localhost:3000/gmail/messages/:id/agent-scan` through `BackendClient`. It displays recent Gmail message metadata, allows selecting one message, shows deterministic `StaticThreatAgent` checks, and shows AI agent chain steps plus final risk details for the selected message.
 
 ## Current App-To-Backend Flow
 
@@ -276,6 +315,6 @@ Local TypeScript/Express backend
 
 ## Notes
 
-Gmail OAuth token persistence, profile testing, recent message metadata fetching, one-message `NormalizedEmail` conversion, one-message deterministic static scanning, and macOS selected-message scan UI are implemented. Persisted Gmail static scan history and broader scan orchestration will be added in later steps. OpenAI Agents SDK workflow, MCP tool layer, and notifications will also be added later. Mock scan results are persisted locally after seeding, but Static Threat Agent preview results and Gmail static scan results are not persisted.
+Gmail OAuth token persistence, profile testing, recent message metadata fetching, one-message `NormalizedEmail` conversion, one-message deterministic static scanning, OpenAI-powered agent scanning, and macOS selected-message scan UI are implemented. Persisted Gmail scan history will be added in a later step. MCP tool layer and notifications will also be added later. Mock scan results are persisted locally after seeding, but Static Threat Agent preview results, Gmail static scan results, and Gmail agent scan results are not persisted.
 The backend currently supports one local connected Gmail account for development. Multi-account support is planned for a later step.
 A future hosted OAuth broker could remove local client-secret setup from the local MVP.

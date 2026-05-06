@@ -4,7 +4,7 @@ MailShield Core is the local TypeScript backend for MailShield Agent.
 
 ## Current Status
 
-The backend currently exposes a health endpoint, SQLite-backed mock email scan results, a rule-based Static Threat Agent preview, readonly Gmail OAuth endpoints, local token persistence, Gmail OAuth config-status metadata, a Gmail profile test endpoint, recent Gmail message metadata fetching, Gmail-to-NormalizedEmail conversion for one message, and one-message Gmail static scanning.
+The backend currently exposes a health endpoint, SQLite-backed mock email scan results, a rule-based Static Threat Agent preview, readonly Gmail OAuth endpoints, local token persistence, Gmail OAuth config-status metadata, a Gmail profile test endpoint, recent Gmail message metadata fetching, Gmail-to-NormalizedEmail conversion for one message, one-message Gmail static scanning, and one-message OpenAI agent scanning.
 
 ## Setup
 
@@ -19,6 +19,8 @@ cp .env.example .env
 ```
 
 Fill `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, and `GMAIL_SCOPES`. The intended scope is `https://www.googleapis.com/auth/gmail.readonly`.
+
+Fill `OPENAI_API_KEY` before testing AI agent scan. The OpenAI API key is not logged or returned.
 
 ## Run
 
@@ -118,5 +120,13 @@ curl http://localhost:3000/gmail/messages/<gmail-message-id>/static-scan
 ```
 
 `GET /gmail/messages/:id/static-scan` uses the existing Gmail normalization flow and runs the rule-based deterministic `StaticThreatAgent` on one real Gmail message. The response includes the normalized email and generated checks. Attachment contents are not downloaded, scan results are not persisted in this step, and this does not use OpenAI or MCP.
+
+Run the OpenAI-powered agent scan on one normalized Gmail message:
+
+```bash
+curl -X POST http://localhost:3000/gmail/messages/<gmail-message-id>/agent-scan
+```
+
+`POST /gmail/messages/:id/agent-scan` requires `OPENAI_API_KEY`, uses the stored Gmail OAuth token, reuses the existing Gmail normalization flow, runs `StaticThreatAgent`, and then runs the OpenAI-powered chain: Email Context Agent, Static Threat Agent, LLM Threat Reasoning Agent, Prompt Injection Agent, Risk Scoring Agent, and Explanation Agent. The response includes normalized email summary, agent steps, checks, final risk level, score, explanation, and limitations. Attachment contents are not downloaded, raw Gmail API responses are not returned, scan results are not persisted, and MCP is not implemented yet.
 
 To reset local data, stop the backend and delete `apps/core/data/mailshield.sqlite`.

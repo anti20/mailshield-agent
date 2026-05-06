@@ -50,5 +50,8 @@ export const config = {
     redirectUri: process.env.GOOGLE_REDIRECT_URI ?? defaultGoogleRedirectUri,
     scopes: readScopes()
   },
+  openai: {
+    apiKey: process.env.OPENAI_API_KEY
+  },
   port: readPort()
 };

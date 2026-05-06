@@ -5,6 +5,7 @@ import { openDatabase } from "./db/database.js";
 import { GmailAuthService } from "./gmail/GmailAuthService.js";
 import { GmailMessageService } from "./gmail/GmailMessageService.js";
 import { GmailProfileService } from "./gmail/GmailProfileService.js";
+import { GmailAgentScanService } from "./services/GmailAgentScanService.js";
 import { GmailStaticScanService } from "./services/GmailStaticScanService.js";
 import { ScanPipeline } from "./services/ScanPipeline.js";
 import { GmailTokenStore } from "./storage/GmailTokenStore.js";
@@ -19,6 +20,11 @@ try {
   const gmailProfileService = new GmailProfileService(gmailAuthService, gmailTokenStore);
   const gmailMessageService = new GmailMessageService(gmailAuthService, gmailTokenStore);
   const gmailStaticScanService = new GmailStaticScanService(gmailMessageService, scanPipeline);
+  const gmailAgentScanService = new GmailAgentScanService(
+    config.openai,
+    gmailMessageService,
+    scanPipeline
+  );
   scanStore.initialize(mockScanResults);
   gmailTokenStore.initialize();
 
@@ -29,7 +35,8 @@ try {
     gmailTokenStore,
     gmailProfileService,
     gmailMessageService,
-    gmailStaticScanService
+    gmailStaticScanService,
+    gmailAgentScanService
   );
 
   const server = app.listen(config.port, () => {

@@ -39,3 +39,8 @@
 - Gmail message metadata is fetched before full email scanning.
 - Raw Gmail API responses are not exposed directly; backend responses are normalized first.
 - Attachment contents and attachment files are not downloaded in the metadata fetching step.
+- The first AI workflow uses the official OpenAI Agents SDK TypeScript package.
+- The AI agent scan reuses `StaticThreatAgent` as a deterministic baseline before LLM reasoning.
+- OpenAI API keys live in local `apps/core/.env` and are never logged or returned in API responses.
+- Agent scan results are not persisted until the workflow shape stabilizes.
+- MCP remains the next tool-layer milestone and is intentionally not added to the first OpenAI agent chain.

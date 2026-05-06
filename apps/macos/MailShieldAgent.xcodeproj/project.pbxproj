@@ -31,6 +31,7 @@
 		8A2D4E5F1B3C400000000116 /* GmailMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2D4E5F1B3C400000000217 /* GmailMessage.swift */; };
 		8A2D4E5F1B3C400000000117 /* GmailMessageListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2D4E5F1B3C400000000218 /* GmailMessageListView.swift */; };
 		8A2D4E5F1B3C400000000118 /* GmailMessageScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2D4E5F1B3C400000000219 /* GmailMessageScanView.swift */; };
+		8A2D4E5F1B3C400000000119 /* GmailAgentScan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2D4E5F1B3C40000000021A /* GmailAgentScan.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,6 +60,7 @@
 		8A2D4E5F1B3C400000000217 /* GmailMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GmailMessage.swift; sourceTree = "<group>"; };
 		8A2D4E5F1B3C400000000218 /* GmailMessageListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GmailMessageListView.swift; sourceTree = "<group>"; };
 		8A2D4E5F1B3C400000000219 /* GmailMessageScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GmailMessageScanView.swift; sourceTree = "<group>"; };
+		8A2D4E5F1B3C40000000021A /* GmailAgentScan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GmailAgentScan.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -139,6 +141,7 @@
 				8A2D4E5F1B3C400000000214 /* GmailProfileResponse.swift */,
 				8A2D4E5F1B3C400000000216 /* GmailConfigStatusResponse.swift */,
 				8A2D4E5F1B3C400000000217 /* GmailMessage.swift */,
+				8A2D4E5F1B3C40000000021A /* GmailAgentScan.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -245,6 +248,7 @@
 				8A2D4E5F1B3C400000000116 /* GmailMessage.swift in Sources */,
 				8A2D4E5F1B3C400000000117 /* GmailMessageListView.swift in Sources */,
 				8A2D4E5F1B3C400000000118 /* GmailMessageScanView.swift in Sources */,
+				8A2D4E5F1B3C400000000119 /* GmailAgentScan.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

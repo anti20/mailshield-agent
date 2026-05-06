@@ -76,13 +76,30 @@ struct BackendClient {
         return try decoder.decode(GmailStaticScanResponse.self, from: data)
     }
 
+    func fetchGmailAgentScan(messageId: String) async throws -> GmailAgentScanResponse {
+        let url = baseURL.appending(path: "gmail/messages/\(messageId)/agent-scan")
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        let data = try await fetchData(for: request)
+        return try decoder.decode(GmailAgentScanResponse.self, from: data)
+    }
+
     var gmailOAuthStartURL: URL {
         baseURL.appending(path: "auth/gmail/start")
     }
 
     private func fetchData(from url: URL) async throws -> Data {
         let (data, response) = try await URLSession.shared.data(from: url)
+        return try validate(data: data, response: response)
+    }
 
+    private func fetchData(for request: URLRequest) async throws -> Data {
+        let (data, response) = try await URLSession.shared.data(for: request)
+        return try validate(data: data, response: response)
+    }
+
+    private func validate(data: Data, response: URLResponse) throws -> Data {
         guard let httpResponse = response as? HTTPURLResponse else {
             throw BackendClientError.invalidResponse(statusCode: nil)
         }

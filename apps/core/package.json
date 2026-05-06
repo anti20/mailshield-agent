@@ -10,13 +10,15 @@
     "start": "node dist/server.js"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "dependencies": {
+    "@openai/agents": "^0.9.1",
     "better-sqlite3": "^12.9.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "googleapis": "^171.4.0"
+    "googleapis": "^171.4.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
