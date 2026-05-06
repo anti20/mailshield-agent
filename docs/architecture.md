@@ -32,8 +32,10 @@ The current backend skeleton lives in `apps/core`. It is a local TypeScript Node
 - `GET /gmail/messages/:id/normalized`: fetches one Gmail message and converts it to `NormalizedEmail`.
 - `GET /gmail/messages/:id/static-scan`: runs static checks on one normalized Gmail message.
 - `POST /gmail/messages/:id/agent-scan`: runs the OpenAI-powered agent chain on one normalized Gmail message.
+- `GET /mcp/tools`: lists local MCP-compatible tools and schemas.
+- `POST /mcp/tools/:name/invoke`: invokes one local MCP-compatible tool.
 
-The scan result model includes per-agent checks. Each check has a `passed`, `warning`, or `failed` status, plus a reason and optional evidence. The backend seeds the current mock scan results into SQLite only when the database is empty. Gmail OAuth tokens are persisted locally, recent Gmail message metadata can be fetched, one Gmail message can be converted into `NormalizedEmail`, one Gmail message can be scanned with deterministic static checks, and one Gmail message can be scanned with the OpenAI-powered agent chain. Scan results for this Gmail flow are not persisted yet. The backend does not use MCP yet.
+The scan result model includes per-agent checks. Each check has a `passed`, `warning`, or `failed` status, plus a reason and optional evidence. The backend seeds the current mock scan results into SQLite only when the database is empty. Gmail OAuth tokens are persisted locally, recent Gmail message metadata can be fetched, one Gmail message can be converted into `NormalizedEmail`, one Gmail message can be scanned with deterministic static checks, and one Gmail message can be scanned with the OpenAI-powered agent chain. Scan results for this Gmail flow are not persisted yet. A local MCP-compatible layer now wraps existing Gmail and scan services for tool-style access.
 
 ## Current Gmail OAuth Preparation
 
@@ -189,9 +191,27 @@ GmailAgentScanService
        combined agent scan result
 ```
 
-Each step returns structured data. The combined result includes normalized email summary, `agentSteps[]`, combined checks, final risk level, final risk score, final explanation, and limitations. The workflow reuses the existing Gmail normalization flow and `StaticThreatAgent` baseline. It does not persist agent scan results yet, does not download attachment contents, does not expose raw Gmail API responses, does not log or return Gmail tokens, does not log or return OpenAI API keys, and does not use MCP.
+Each step returns structured data. The combined result includes normalized email summary, `agentSteps[]`, combined checks, final risk level, final risk score, final explanation, and limitations. The workflow reuses the existing Gmail normalization flow and `StaticThreatAgent` baseline through the local MCP-compatible tool layer (`gmail.getNormalizedMessage` and `scan.runStaticThreatScan`). It does not persist agent scan results yet, does not download attachment contents, does not expose raw Gmail API responses, does not log or return Gmail tokens, and does not log or return OpenAI API keys.
 
-MCP is planned as the next tool-layer milestone. In this milestone, agents reason over normalized email content and existing deterministic checks only.
+## Current Local MCP Tool Layer
+
+The backend now includes a local MCP-compatible tool layer that wraps existing services instead of duplicating Gmail or scanner logic.
+
+Implemented tools:
+
+- `gmail.getRecentMessages` -> wraps `GmailMessageService.listRecentMessages`
+- `gmail.getNormalizedMessage` -> wraps `GmailMessageService.getNormalizedMessage`
+- `scan.runStaticThreatScan` -> wraps `ScanPipeline.scanEmail` (`StaticThreatAgent`)
+- `scan.getHistory` -> wraps `ScanStore.listScanResults`
+
+Tool contracts are explicit with input/output schemas, and outputs stay normalized and safe. The MCP layer does not expose raw Gmail API responses, does not expose Gmail tokens, and does not log Gmail tokens or OpenAI keys.
+
+The MCP transport is local HTTP for now:
+
+- `GET /mcp/tools` for tool discovery
+- `POST /mcp/tools/:name/invoke` for tool invocation with `{ \"input\": ... }`
+
+The invoke route is local-only to reduce misuse risk in the local MVP.
 
 ## Current Static Threat Agent
 
@@ -315,6 +335,6 @@ Local TypeScript/Express backend
 
 ## Notes
 
-Gmail OAuth token persistence, profile testing, recent message metadata fetching, one-message `NormalizedEmail` conversion, one-message deterministic static scanning, OpenAI-powered agent scanning, and macOS selected-message scan UI are implemented. Persisted Gmail scan history will be added in a later step. MCP tool layer and notifications will also be added later. Mock scan results are persisted locally after seeding, but Static Threat Agent preview results, Gmail static scan results, and Gmail agent scan results are not persisted.
+Gmail OAuth token persistence, profile testing, recent message metadata fetching, one-message `NormalizedEmail` conversion, one-message deterministic static scanning, OpenAI-powered agent scanning, local MCP-compatible tool wrapping, and macOS selected-message scan UI are implemented. Persisted Gmail scan history will be added in a later step, and notifications remain a later step. Mock scan results are persisted locally after seeding, but Static Threat Agent preview results, Gmail static scan results, and Gmail agent scan results are not persisted.
 The backend currently supports one local connected Gmail account for development. Multi-account support is planned for a later step.
 A future hosted OAuth broker could remove local client-secret setup from the local MVP.

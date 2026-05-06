@@ -7,8 +7,7 @@ import {
   summarizeNormalizedEmail
 } from "../models/agentScan.js";
 import type { AgentCheck, AgentCheckStatus, RiskLevel } from "../models/scanResult.js";
-import type { GmailMessageService } from "../gmail/GmailMessageService.js";
-import type { ScanPipeline } from "./ScanPipeline.js";
+import type { McpToolService } from "../mcp/McpToolService.js";
 
 export type OpenAIConfig = {
   apiKey?: string;
@@ -48,6 +47,46 @@ const explanationOutput = z.object({
   limitations: z.array(z.string())
 });
 
+const normalizedMessageToolOutput = z.object({
+  item: z.object({
+    id: z.string(),
+    gmailMessageId: z.string().optional(),
+    threadId: z.string().optional(),
+    subject: z.string(),
+    sender: z.string(),
+    replyTo: z.string().optional(),
+    bodyText: z.string().optional(),
+    bodyHtml: z.string().optional(),
+    links: z.array(
+      z.object({
+        text: z.string().optional(),
+        url: z.string()
+      })
+    ),
+    attachments: z.array(
+      z.object({
+        filename: z.string(),
+        mimeType: z.string().optional(),
+        sizeBytes: z.number().optional()
+      })
+    ),
+    receivedAt: z.string()
+  })
+});
+
+const staticThreatScanToolOutput = z.object({
+  checks: z.array(
+    z.object({
+      id: z.string(),
+      agentName: z.string(),
+      title: z.string(),
+      status: z.enum(["passed", "warning", "failed"]),
+      reason: z.string(),
+      evidence: z.string().optional()
+    })
+  )
+});
+
 type ContextOutput = z.infer<typeof contextOutput>;
 type ThreatReasoningOutput = z.infer<typeof threatReasoningOutput>;
 type PromptInjectionOutput = z.infer<typeof promptInjectionOutput>;
@@ -64,24 +103,33 @@ export class OpenAIConfigurationError extends Error {
 export class GmailAgentScanService {
   constructor(
     private readonly openAIConfig: OpenAIConfig,
-    private readonly gmailMessageService: GmailMessageService,
-    private readonly scanPipeline: ScanPipeline
+    private readonly mcpToolService: McpToolService
   ) {}
 
   async scanMessage(messageId: string): Promise<GmailAgentScanResult> {
     this.assertConfigured();
 
-    const email = await this.gmailMessageService.getNormalizedMessage(messageId);
-    const staticChecks = this.scanPipeline.scanEmail(email);
+    const email = await this.getNormalizedMessageWithMcp(messageId);
+    const staticChecks = await this.runStaticScanWithMcp(email);
     const emailInput = buildEmailInput(email);
     const agentSteps: AgentStep[] = [];
 
     const emailContext = await this.runEmailContextAgent(emailInput);
-    agentSteps.push(toAgentStep("email-context", "Email Context Agent", emailContext.summary, emailContext));
+    agentSteps.push(
+      toAgentStep("email-context", "Email Context Agent", emailContext.summary, {
+        ...emailContext,
+        toolCall: {
+          toolName: "gmail.getNormalizedMessage"
+        }
+      })
+    );
 
     agentSteps.push(
       toAgentStep("static-threat", "Static Threat Agent", summarizeStaticChecks(staticChecks), {
-        checks: staticChecks
+        checks: staticChecks,
+        toolCall: {
+          toolName: "scan.runStaticThreatScan"
+        }
       })
     );
 
@@ -144,9 +192,35 @@ export class GmailAgentScanService {
         ...explanation.limitations,
         "Agent scan results are not persisted yet.",
         "Attachment contents are not downloaded or analyzed.",
-        "MCP tools are not available in this workflow yet."
+        "MCP tool layer is used for normalized Gmail message lookup and static threat checks."
       ])
     };
+  }
+
+  private async getNormalizedMessageWithMcp(messageId: string): Promise<NormalizedEmail> {
+    const result = await this.mcpToolService.invokeTool("gmail.getNormalizedMessage", {
+      messageId
+    });
+    const parsed = normalizedMessageToolOutput.safeParse(result);
+
+    if (!parsed.success) {
+      throw new Error("MCP gmail.getNormalizedMessage returned an invalid response shape.");
+    }
+
+    return parsed.data.item;
+  }
+
+  private async runStaticScanWithMcp(email: NormalizedEmail): Promise<AgentCheck[]> {
+    const result = await this.mcpToolService.invokeTool("scan.runStaticThreatScan", {
+      email
+    });
+    const parsed = staticThreatScanToolOutput.safeParse(result);
+
+    if (!parsed.success) {
+      throw new Error("MCP scan.runStaticThreatScan returned an invalid response shape.");
+    }
+
+    return parsed.data.checks;
   }
 
   private assertConfigured(): void {

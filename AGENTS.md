@@ -44,11 +44,8 @@ MailShield Agent is a native macOS menu bar app that monitors Gmail, analyzes em
 
 ## Workflow rules
 
-- After finishing a step, stop and summarize what changed.
 - Include how to run or verify the change when applicable.
-- Include one suggested commit message.
 - Do not commit automatically.
-- The user commits with their own commit tool.
 
 ## Current constraints
 

@@ -43,4 +43,5 @@
 - The AI agent scan reuses `StaticThreatAgent` as a deterministic baseline before LLM reasoning.
 - OpenAI API keys live in local `apps/core/.env` and are never logged or returned in API responses.
 - Agent scan results are not persisted until the workflow shape stabilizes.
-- MCP remains the next tool-layer milestone and is intentionally not added to the first OpenAI agent chain.
+- MCP is introduced as a local MCP-compatible tool layer that wraps existing Gmail and scan services without duplicating core logic.
+- The OpenAI agent scan now routes deterministic backend capabilities through the local MCP-compatible tools (`gmail.getNormalizedMessage`, `scan.runStaticThreatScan`).

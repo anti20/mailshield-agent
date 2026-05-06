@@ -2,11 +2,13 @@ import express, { type NextFunction, type Request, type Response } from "express
 import { gmailAuthRoutes } from "./routes/gmailAuthRoutes.js";
 import { gmailMessageRoutes } from "./routes/gmailMessageRoutes.js";
 import { healthRoutes } from "./routes/healthRoutes.js";
+import { mcpToolRoutes } from "./routes/mcpToolRoutes.js";
 import { scanPreviewRoutes } from "./routes/scanPreviewRoutes.js";
 import { scanResultRoutes } from "./routes/scanResultRoutes.js";
 import type { GmailAuthService } from "./gmail/GmailAuthService.js";
 import type { GmailMessageService } from "./gmail/GmailMessageService.js";
 import type { GmailProfileService } from "./gmail/GmailProfileService.js";
+import type { McpToolService } from "./mcp/McpToolService.js";
 import type { GmailAgentScanService } from "./services/GmailAgentScanService.js";
 import type { GmailStaticScanService } from "./services/GmailStaticScanService.js";
 import type { ScanPipeline } from "./services/ScanPipeline.js";
@@ -20,6 +22,7 @@ export function createApp(
   gmailTokenStore: GmailTokenStore,
   gmailProfileService: GmailProfileService,
   gmailMessageService: GmailMessageService,
+  mcpToolService: McpToolService,
   gmailStaticScanService: GmailStaticScanService,
   gmailAgentScanService: GmailAgentScanService
 ) {
@@ -31,6 +34,7 @@ export function createApp(
   app.use(scanPreviewRoutes(scanPipeline));
   app.use(gmailAuthRoutes(gmailAuthService, gmailTokenStore, gmailProfileService));
   app.use(gmailMessageRoutes(gmailMessageService, gmailStaticScanService, gmailAgentScanService));
+  app.use(mcpToolRoutes(mcpToolService));
   app.use(handleError);
 
   return app;
