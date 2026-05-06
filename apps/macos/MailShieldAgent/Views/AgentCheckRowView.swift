@@ -62,5 +62,6 @@ struct AgentCheckRowView: View {
         .padding(12)
         .background(Color(nsColor: .controlBackgroundColor))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+        .textSelection(.enabled)
     }
 }

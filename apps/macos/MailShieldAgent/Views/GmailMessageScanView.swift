@@ -61,6 +61,7 @@ struct GmailMessageScanView: View {
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .textSelection(.enabled)
                 }
             } else {
                 VStack(alignment: .leading, spacing: 8) {
@@ -204,5 +205,6 @@ private struct AgentStepRowView: View {
         .padding(10)
         .background(Color(nsColor: .controlBackgroundColor))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+        .textSelection(.enabled)
     }
 }

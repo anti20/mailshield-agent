@@ -3,7 +3,7 @@
 MailShield Agent will be built in small commit-friendly steps.
 
 0. Complete: Project structure and documentation
-0.5. Complete: Product framing, implementation planning, and Codex project instructions
+   0.5. Complete: Product framing, implementation planning, and Codex project instructions
 1. Complete: macOS menu bar app skeleton
 2. Complete: TypeScript backend health endpoint
 3. Complete: SwiftUI app calls backend health endpoint

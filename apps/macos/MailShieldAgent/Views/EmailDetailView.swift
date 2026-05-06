@@ -28,6 +28,7 @@ struct EmailDetailView: View {
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .textSelection(.enabled)
                 }
             } else {
                 VStack(alignment: .leading, spacing: 8) {
