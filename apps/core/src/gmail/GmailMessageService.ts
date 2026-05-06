@@ -17,6 +17,8 @@ const messageFields = [
   "payload(headers,filename,mimeType,body/attachmentId,parts(filename,mimeType,body/attachmentId,parts(filename,mimeType,body/attachmentId,parts(filename,mimeType,body/attachmentId))))"
 ].join(",");
 
+const metadataHeaders = ["Subject", "From", "Date"];
+
 export class GmailMessageService {
   constructor(
     private readonly gmailAuthService: GmailAuthService,
@@ -58,13 +60,16 @@ export class GmailMessageService {
     const messageResponse = await gmail.users.messages.get({
       userId: "me",
       id: messageId,
-      format: "full",
+      format: "metadata",
+      metadataHeaders,
       fields: messageFields
     });
     const message = messageResponse.data;
     const headers = message.payload?.headers ?? [];
-    const receivedAt =
-      this.readHeader(headers, "Date") ?? this.readInternalDate(message.internalDate);
+    const receivedAt = this.readReceivedAt(
+      this.readHeader(headers, "Date"),
+      message.internalDate
+    );
 
     return {
       id: message.id ?? messageId,
@@ -97,6 +102,18 @@ export class GmailMessageService {
     return Number.isFinite(timestamp)
       ? new Date(timestamp).toISOString()
       : new Date(0).toISOString();
+  }
+
+  private readReceivedAt(dateHeader: string | undefined, internalDate?: string | null): string {
+    if (dateHeader) {
+      const parsedDate = new Date(dateHeader);
+
+      if (!Number.isNaN(parsedDate.getTime())) {
+        return parsedDate.toISOString();
+      }
+    }
+
+    return this.readInternalDate(internalDate);
   }
 
   private hasAttachment(part?: gmail_v1.Schema$MessagePart): boolean {

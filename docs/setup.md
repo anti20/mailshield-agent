@@ -103,7 +103,7 @@ Expected response shape:
 
 ## Gmail OAuth Setup
 
-Gmail OAuth is prepared in the TypeScript backend, and OAuth tokens are persisted locally in SQLite for development. Real Gmail message fetching and Gmail scanning are not implemented yet. Full access tokens or refresh tokens must not be logged or returned in responses.
+Gmail OAuth is implemented in the TypeScript backend, and OAuth tokens are persisted locally in SQLite for development. Recent Gmail message metadata fetching is implemented through `GET /gmail/messages/recent`, but Gmail scanning is not implemented yet. Full access tokens or refresh tokens must not be logged or returned in responses.
 
 1. Create or use a Google Cloud project.
 2. Enable the Gmail API.

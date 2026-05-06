@@ -38,8 +38,16 @@ function handleError(
   response: Response,
   _next: NextFunction
 ) {
-  console.error(error);
+  const message = sanitizeLogMessage(error.message ?? "Unknown error");
+  console.error(`Request failed: ${message}`);
   response.status(500).json({
     error: "Internal server error"
   });
+}
+
+function sanitizeLogMessage(message: string): string {
+  return message
+    .replace(/(access[_-]?token=)[^&\s]+/gi, "$1[redacted]")
+    .replace(/(refresh[_-]?token=)[^&\s]+/gi, "$1[redacted]")
+    .replace(/(Bearer\s+)[A-Za-z0-9._-]+/gi, "$1[redacted]");
 }
