@@ -28,3 +28,7 @@
 - Rule-based scanning is added before LLM scanning to provide a stable deterministic security baseline.
 - Prompt-injection-like text is checked early because AI email workflows can be vulnerable to hidden or adversarial instructions.
 - The Static Threat Agent is visualized before Gmail integration so the explainable security UI is testable without real account access.
+- Gmail integration starts with readonly OAuth using `https://www.googleapis.com/auth/gmail.readonly`.
+- OAuth is prepared before fetching real emails so local configuration and consent flow issues can be solved separately.
+- Secrets live in local `apps/core/.env`, while `apps/core/.env.example` is committed as the template.
+- Gmail OAuth callbacks return safe token metadata only; full tokens are not logged or returned, and token persistence is planned for a later step.

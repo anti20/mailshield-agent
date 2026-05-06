@@ -2,9 +2,9 @@
 
 ## Current Status
 
-Step 8 connects the macOS dashboard to the Static Threat Agent preview endpoint.
+Step 9 prepares readonly Gmail OAuth endpoints in the TypeScript backend.
 
-No Gmail credentials, OpenAI configuration, or MCP setup exists yet.
+Gmail message fetching, OpenAI configuration, and MCP setup do not exist yet.
 
 ## Codex Setup
 
@@ -101,6 +101,56 @@ Expected response shape:
 
 `GET /scan-preview` runs the rule-based `StaticThreatAgent` against mock `NormalizedEmail` inputs. It returns explainable per-agent checks with `passed`, `warning`, or `failed` statuses. Preview results are not persisted, and this endpoint does not use Gmail, OpenAI Agents SDK, or MCP.
 
+## Gmail OAuth Setup
+
+Gmail OAuth is prepared in the TypeScript backend, but real Gmail message fetching is not implemented yet. Token persistence is not complete yet, and full access tokens or refresh tokens must not be logged or returned in responses.
+
+1. Create or use a Google Cloud project.
+2. Enable the Gmail API.
+3. Configure the OAuth consent screen for development.
+4. Create OAuth client credentials for a desktop or local development app.
+5. Add this local redirect URI:
+
+```text
+http://localhost:3000/auth/gmail/callback
+```
+
+6. Copy the env example:
+
+```bash
+cp apps/core/.env.example apps/core/.env
+```
+
+7. Fill these variables in `apps/core/.env`:
+
+```text
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:3000/auth/gmail/callback
+GMAIL_SCOPES=https://www.googleapis.com/auth/gmail.readonly
+```
+
+The only intended Gmail scope for now is:
+
+```text
+https://www.googleapis.com/auth/gmail.readonly
+```
+
+8. Start the backend:
+
+```bash
+cd apps/core
+npm run dev
+```
+
+9. Open the OAuth start endpoint in a browser:
+
+```text
+http://localhost:3000/auth/gmail/start
+```
+
+`GET /auth/gmail/start` begins the OAuth flow and redirects to Google. `GET /auth/gmail/callback` handles the OAuth callback and returns safe token metadata only when configuration is present. This OAuth preparation does not use OpenAI Agents SDK or MCP.
+
 ## Reset Local Data
 
 Stop the backend, then delete the local SQLite file:
@@ -133,6 +183,6 @@ The Static Threat Agent preview UI should show mock normalized emails with passe
 
 The backend must be running before loading scans or running the static preview. If `GET /scan-results` or `GET /scan-preview` fails, the dashboard shows a simple error message.
 
-No Gmail, OpenAI Agents SDK, or MCP integration exists yet.
+Gmail OAuth is prepared, but Gmail message fetching is not implemented yet. OpenAI Agents SDK and MCP integration do not exist yet.
 
 The mock scan results are persisted in local SQLite after seeding. Static preview results are not persisted. Neither flow uses Gmail, OpenAI Agents SDK, or MCP yet.

@@ -1,8 +1,13 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
+
+dotenv.config({ quiet: true });
 
 const defaultPort = 3000;
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const defaultGoogleRedirectUri = "http://localhost:3000/auth/gmail/callback";
+const defaultGmailScopes = ["https://www.googleapis.com/auth/gmail.readonly"];
 
 function readPort(): number {
   const rawPort = process.env.PORT;
@@ -20,7 +25,26 @@ function readPort(): number {
   return port;
 }
 
+function readScopes(): string[] {
+  const rawScopes = process.env.GMAIL_SCOPES;
+
+  if (!rawScopes) {
+    return defaultGmailScopes;
+  }
+
+  return rawScopes
+    .split(/[,\s]+/)
+    .map((scope) => scope.trim())
+    .filter(Boolean);
+}
+
 export const config = {
   databasePath: path.join(projectRoot, "data", "mailshield.sqlite"),
+  gmail: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    redirectUri: process.env.GOOGLE_REDIRECT_URI ?? defaultGoogleRedirectUri,
+    scopes: readScopes()
+  },
   port: readPort()
 };

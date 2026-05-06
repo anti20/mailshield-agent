@@ -31,6 +31,7 @@ Step 5 complete: the macOS dashboard can load and display mock scan results.
 Step 6 complete: the backend persists scan history in local SQLite.
 Step 7 complete: the backend exposes a rule-based Static Threat Agent preview.
 Step 8 complete: the macOS dashboard can run and display the Static Threat Agent preview.
+Step 9 complete: the backend prepares a readonly Gmail OAuth flow.
 
 ## Documentation
 
@@ -102,6 +103,15 @@ curl http://localhost:3000/scan-preview
 
 `GET /scan-preview` runs a deterministic rule-based `StaticThreatAgent` against mock `NormalizedEmail` inputs. The checks are explainable, return `passed`, `warning`, or `failed`, and are not persisted. This preview does not use Gmail, OpenAI Agents SDK, or MCP.
 
+The backend also prepares a Gmail OAuth flow:
+
+```text
+GET http://localhost:3000/auth/gmail/start
+GET http://localhost:3000/auth/gmail/callback
+```
+
+Configure `apps/core/.env` from `apps/core/.env.example` before starting OAuth. The intended Gmail scope is readonly access only: `https://www.googleapis.com/auth/gmail.readonly`. The callback returns safe token metadata only; full tokens are not logged or returned, token persistence is not complete, and real Gmail message fetching is not implemented yet. See [Setup](docs/setup.md) for the full local Google Cloud setup steps.
+
 Open and run the macOS app in Xcode:
 
 1. Open `apps/macos/MailShieldAgent.xcodeproj`.
@@ -126,4 +136,4 @@ To verify the Static Threat Agent preview UI:
 
 The macOS app uses `URLSession` to call `GET /scan-preview`. The backend runs `StaticThreatAgent` against mock normalized emails, and the UI shows passed, warning, and failed check counts plus per-check reason and evidence. Preview results are not persisted and do not use Gmail, OpenAI Agents SDK, or MCP.
 
-No Gmail, OpenAI Agents SDK, or MCP integration exists yet.
+Gmail OAuth is prepared, but Gmail message fetching is not implemented yet. OpenAI Agents SDK and MCP integration do not exist yet.

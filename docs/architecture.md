@@ -8,22 +8,58 @@ MailShield Agent is planned as a local-first macOS email safety assistant. The s
 - Local TypeScript backend: a Node-based service that exposes local endpoints to the macOS app.
 - OpenAI Agents SDK workflow: the future threat analysis workflow that coordinates email inspection.
 - Local MCP tool layer: a controlled tool layer for local actions and integration boundaries.
-- Gmail API integration: the first email provider integration.
+- Gmail API integration: the first email provider integration, starting with readonly OAuth.
 - SQLite scan history: local storage for scan results and audit history.
 
 ## Current Implementation
 
 The current implementation includes a native SwiftUI macOS menu bar app in `apps/macos`. It shows a menu bar item, can open a dashboard window, checks backend health, loads mock scan results into a recent scans UI, and visualizes Static Threat Agent preview checks.
 
-The current backend skeleton lives in `apps/core`. It is a local TypeScript Node project that uses Express as the HTTP server on local port `3000` and SQLite for local scan history.
+The current backend skeleton lives in `apps/core`. It is a local TypeScript Node project that uses Express as the HTTP server on local port `3000`, SQLite for local scan history, and prepared Gmail OAuth configuration.
 
 ## Current Backend Routes
 
 - `GET /health`: verifies that the core service is running.
 - `GET /scan-results`: returns SQLite-backed email scan result data.
 - `GET /scan-preview`: runs the rule-based Static Threat Agent against mock normalized emails.
+- `GET /auth/gmail/start`: begins the prepared Gmail OAuth flow.
+- `GET /auth/gmail/callback`: handles the prepared Gmail OAuth callback.
 
-The scan result model includes per-agent checks. Each check has a `passed`, `warning`, or `failed` status, plus a reason and optional evidence. The backend seeds the current mock scan results into SQLite only when the database is empty. It does not use Gmail, OpenAI Agents SDK, or MCP yet.
+The scan result model includes per-agent checks. Each check has a `passed`, `warning`, or `failed` status, plus a reason and optional evidence. The backend seeds the current mock scan results into SQLite only when the database is empty. Gmail OAuth is prepared, but Gmail message fetching is not implemented yet. The backend does not use OpenAI Agents SDK or MCP yet.
+
+## Current Gmail OAuth Preparation
+
+Gmail OAuth is prepared in the TypeScript backend with `GmailAuthService` and these environment variables:
+
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `GOOGLE_REDIRECT_URI`
+- `GMAIL_SCOPES`
+
+The only intended Gmail scope for now is:
+
+```text
+https://www.googleapis.com/auth/gmail.readonly
+```
+
+The prepared OAuth flow is:
+
+```text
+browser
+  |
+  v
+GET /auth/gmail/start
+  |
+  v
+Google OAuth
+  |
+  v
+GET /auth/gmail/callback
+```
+
+`GET /auth/gmail/start` redirects the browser to Google OAuth with readonly Gmail access, offline access, a development consent prompt, and a simple placeholder state value. Stronger state validation is required later.
+
+`GET /auth/gmail/callback` accepts the OAuth code and exchanges it for tokens when the required configuration exists. The callback returns safe token metadata only. Full access tokens and refresh tokens are not logged or returned in responses. Token persistence and real Gmail message fetching are planned for later steps.
 
 ## Current Static Threat Agent
 
@@ -144,4 +180,4 @@ Local TypeScript/Express backend
 
 ## Notes
 
-Gmail integration, OpenAI Agents SDK workflow, MCP tool layer, and notifications will be added in later steps. Mock scan results are persisted locally after seeding, but Static Threat Agent preview results are not persisted. No Gmail, OpenAI, or MCP integration exists yet.
+Gmail OAuth is prepared, but Gmail message fetching will be added in a later step. OpenAI Agents SDK workflow, MCP tool layer, and notifications will also be added later. Mock scan results are persisted locally after seeding, but Static Threat Agent preview results are not persisted.
