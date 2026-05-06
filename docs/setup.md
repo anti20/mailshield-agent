@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step 6 adds a local SQLite persistence foundation for backend scan history.
+Step 7 adds the first rule-based Static Threat Agent preview endpoint.
 
 No Gmail credentials, OpenAI configuration, or MCP setup exists yet.
 
@@ -79,6 +79,27 @@ Expected response shape:
 ```
 
 `GET /scan-results` returns SQLite-backed mock email scan result data. Each item includes per-agent checks, and each check has a `passed`, `warning`, or `failed` status. Seen Gmail message IDs can be stored locally for future Gmail polling. This does not use Gmail, OpenAI Agents SDK, or MCP yet.
+
+Verify the Static Threat Agent preview endpoint:
+
+```bash
+curl http://localhost:3000/scan-preview
+```
+
+Expected response shape:
+
+```json
+{
+  "items": [
+    {
+      "email": {},
+      "checks": []
+    }
+  ]
+}
+```
+
+`GET /scan-preview` runs the rule-based `StaticThreatAgent` against mock `NormalizedEmail` inputs. It returns explainable per-agent checks with `passed`, `warning`, or `failed` statuses. Preview results are not persisted, and this endpoint does not use Gmail, OpenAI Agents SDK, or MCP.
 
 ## Reset Local Data
 

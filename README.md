@@ -29,6 +29,7 @@ Step 3 complete: the macOS dashboard can check the local backend health endpoint
 Step 4 complete: the backend exposes mock email scan results.
 Step 5 complete: the macOS dashboard can load and display mock scan results.
 Step 6 complete: the backend persists scan history in local SQLite.
+Step 7 complete: the backend exposes a rule-based Static Threat Agent preview.
 
 ## Documentation
 
@@ -85,6 +86,20 @@ curl http://localhost:3000/scan-results
 ```
 
 `GET /scan-results` returns scan results from local SQLite with per-agent checks. The initial mock data is seeded only when the database is empty and does not use Gmail, OpenAI Agents SDK, or MCP yet.
+
+The backend also exposes a development-only Static Threat Agent preview:
+
+```text
+GET http://localhost:3000/scan-preview
+```
+
+Verify it with curl:
+
+```bash
+curl http://localhost:3000/scan-preview
+```
+
+`GET /scan-preview` runs a deterministic rule-based `StaticThreatAgent` against mock `NormalizedEmail` inputs. The checks are explainable, return `passed`, `warning`, or `failed`, and are not persisted. This preview does not use Gmail, OpenAI Agents SDK, or MCP.
 
 Open and run the macOS app in Xcode:
 

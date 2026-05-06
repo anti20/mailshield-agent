@@ -10,6 +10,8 @@ The app starts as a native macOS menu bar client connected to a local TypeScript
 
 The macOS app can now demonstrate the planned explainable threat review UI with mock data. It loads scan results, shows risk level and score, and displays per-agent checks as `passed`, `warning`, or `failed`. The backend now has a local-first persistence foundation using SQLite at `apps/core/data/mailshield.sqlite`.
 
+MailShield Agent differs by emphasizing explainable per-agent checks instead of only a single opaque risk label. This step adds deterministic local checks through a rule-based Static Threat Agent that can flag risky sender, attachment, link, HTML, hidden text, and prompt-injection-like patterns.
+
 A later backend will connect to Gmail, run scan workflows, coordinate threat analysis through the OpenAI Agents SDK, expose controlled actions through MCP, and store scan history locally.
 
 ## Planned Extensions
@@ -27,4 +29,4 @@ MailShield Agent is intended to combine a focused macOS menu bar experience with
 
 ## Current Limitation
 
-The current app is still a local shell and backend demo. The backend returns mock scan result data from SQLite, and the macOS app displays those results through `URLSession` calls to `GET /scan-results`. Gmail scanning does not work yet, and no Gmail, OpenAI Agents SDK, MCP, or notifications integration exists yet.
+The current app is still a local shell and backend demo. The backend returns mock scan result data from SQLite, and the macOS app displays those results through `URLSession` calls to `GET /scan-results`. The backend also exposes `GET /scan-preview` for deterministic checks against mock normalized emails. Gmail scanning does not work yet, and no Gmail, OpenAI Agents SDK, MCP, or notifications integration exists yet.

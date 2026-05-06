@@ -10,8 +10,9 @@ MailShield Agent will be built in small commit-friendly steps.
 4. Complete: Mock scan results endpoint
 5. Complete: SwiftUI mock scan results UI
 6. Complete: SQLite persistence foundation for scan history
-7. Next: Prepare Gmail OAuth configuration
-8. Static threat agents
-9. OpenAI Agents SDK workflow
-10. MCP tool layer
-11. Notifications
+7. Complete: Static Threat Agent preview
+8. Next: Connect macOS app to Static Threat Agent preview
+9. Prepare Gmail OAuth configuration
+10. OpenAI Agents SDK workflow
+11. MCP tool layer
+12. Notifications

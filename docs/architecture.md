@@ -21,8 +21,19 @@ The current backend skeleton lives in `apps/core`. It is a local TypeScript Node
 
 - `GET /health`: verifies that the core service is running.
 - `GET /scan-results`: returns SQLite-backed email scan result data.
+- `GET /scan-preview`: runs the rule-based Static Threat Agent against mock normalized emails.
 
 The scan result model includes per-agent checks. Each check has a `passed`, `warning`, or `failed` status, plus a reason and optional evidence. The backend seeds the current mock scan results into SQLite only when the database is empty. It does not use Gmail, OpenAI Agents SDK, or MCP yet.
+
+## Current Static Threat Agent
+
+`StaticThreatAgent` is a deterministic rule-based scanner. It works with `NormalizedEmail`, a provider-neutral email input model that includes subject, sender, optional reply-to, optional text and HTML bodies, links, attachments, and received time.
+
+The agent does not use OpenAI, Gmail, or MCP. It checks for sender/reply-to domain mismatch, risky attachment names, URL shorteners, IP link hosts, punycode domains, visible-link domain mismatch, risky HTML patterns, hidden text indicators, and suspicious prompt-injection-like phrases.
+
+`GET /scan-preview` runs `StaticThreatAgent` against static mock emails. It returns explainable checks with `passed`, `warning`, or `failed` statuses. The preview endpoint is for development and demo use only, and it does not persist preview scan results.
+
+This prepares the backend contract for later Gmail ingestion and OpenAI agent workflows while keeping the first security baseline deterministic and local.
 
 ## Current Persistence
 
@@ -82,6 +93,26 @@ SQLite
 
 The route uses `ScanStore`, and `ScanStore` returns scan results from SQLite. Mock results are seeded only when the database is empty. The app shows each scan's subject, sender, risk level, risk score, and summary. It also shows explainable per-agent checks as `passed`, `warning`, or `failed`. This verifies the planned review experience before Gmail, OpenAI Agents SDK, or MCP work begins.
 
+## Current Static Threat Preview Flow
+
+```text
+GET http://localhost:3000/scan-preview
+  |
+  v
+Express backend
+  |
+  v
+ScanPipeline
+  |
+  v
+StaticThreatAgent
+  |
+  v
+Mock NormalizedEmail inputs
+```
+
+The preview flow does not write to SQLite. Persisted scan history still comes from `GET /scan-results` through `ScanStore`.
+
 ## Text Diagram
 
 ```text
@@ -105,4 +136,4 @@ Local TypeScript/Express backend
 
 ## Notes
 
-Gmail integration, OpenAI Agents SDK workflow, MCP tool layer, and notifications will be added in later steps. Mock scan results are persisted locally after seeding. No Gmail, OpenAI, or MCP integration exists yet.
+Gmail integration, OpenAI Agents SDK workflow, MCP tool layer, and notifications will be added in later steps. Mock scan results are persisted locally after seeding, but Static Threat Agent preview results are not persisted. No Gmail, OpenAI, or MCP integration exists yet.

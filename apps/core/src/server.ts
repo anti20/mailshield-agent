@@ -2,14 +2,16 @@ import { createApp } from "./app.js";
 import { config } from "./config.js";
 import { mockScanResults } from "./data/mockScanResults.js";
 import { openDatabase } from "./db/database.js";
+import { ScanPipeline } from "./services/ScanPipeline.js";
 import { ScanStore } from "./storage/ScanStore.js";
 
 try {
   const database = openDatabase(config.databasePath);
   const scanStore = new ScanStore(database);
+  const scanPipeline = new ScanPipeline();
   scanStore.initialize(mockScanResults);
 
-  const app = createApp(scanStore);
+  const app = createApp(scanStore, scanPipeline);
 
   const server = app.listen(config.port, () => {
     console.log(`mailshield-core listening on port ${config.port}`);

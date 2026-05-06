@@ -1,14 +1,17 @@
 import express, { type NextFunction, type Request, type Response } from "express";
 import { healthRoutes } from "./routes/healthRoutes.js";
+import { scanPreviewRoutes } from "./routes/scanPreviewRoutes.js";
 import { scanResultRoutes } from "./routes/scanResultRoutes.js";
+import type { ScanPipeline } from "./services/ScanPipeline.js";
 import type { ScanStore } from "./storage/ScanStore.js";
 
-export function createApp(scanStore: ScanStore) {
+export function createApp(scanStore: ScanStore, scanPipeline: ScanPipeline) {
   const app = express();
 
   app.use(express.json());
   app.use(healthRoutes);
   app.use(scanResultRoutes(scanStore));
+  app.use(scanPreviewRoutes(scanPipeline));
   app.use(handleError);
 
   return app;

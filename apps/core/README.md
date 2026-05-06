@@ -4,7 +4,7 @@ MailShield Core is the local TypeScript backend for MailShield Agent.
 
 ## Current Status
 
-The backend currently exposes a health endpoint and SQLite-backed mock email scan results.
+The backend currently exposes a health endpoint, SQLite-backed mock email scan results, and a rule-based Static Threat Agent preview.
 
 ## Setup
 
@@ -44,5 +44,13 @@ curl http://localhost:3000/scan-results
 ```
 
 `GET /scan-results` returns scan result data from SQLite with per-agent checks. Seen Gmail message IDs can be stored locally for future polling, but the backend does not use Gmail, OpenAI, or MCP yet.
+
+Verify the Static Threat Agent preview:
+
+```bash
+curl http://localhost:3000/scan-preview
+```
+
+`GET /scan-preview` runs deterministic local checks against mock normalized emails. It returns explainable `passed`, `warning`, or `failed` checks and does not persist preview results. It does not use Gmail, OpenAI, or MCP.
 
 To reset local data, stop the backend and delete `apps/core/data/mailshield.sqlite`.

@@ -25,3 +25,5 @@
 - SQLite is used for local scan history in the backend.
 - Mock scan results are seeded into SQLite before real Gmail integration.
 - Seen Gmail message IDs are tracked locally so future Gmail polling can avoid reprocessing messages.
+- Rule-based scanning is added before LLM scanning to provide a stable deterministic security baseline.
+- Prompt-injection-like text is checked early because AI email workflows can be vulnerable to hidden or adversarial instructions.
