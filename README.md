@@ -30,6 +30,7 @@ Step 4 complete: the backend exposes mock email scan results.
 Step 5 complete: the macOS dashboard can load and display mock scan results.
 Step 6 complete: the backend persists scan history in local SQLite.
 Step 7 complete: the backend exposes a rule-based Static Threat Agent preview.
+Step 8 complete: the macOS dashboard can run and display the Static Threat Agent preview.
 
 ## Documentation
 
@@ -116,5 +117,13 @@ To verify the mock scan results UI:
 3. Click "Load mock scans" in the dashboard.
 
 The macOS app uses `URLSession` to call `GET /scan-results`. The backend returns SQLite-backed scan result data with per-agent checks, and the UI displays each check as `passed`, `warning`, or `failed`. Gmail, OpenAI Agents SDK, and MCP are not used yet.
+
+To verify the Static Threat Agent preview UI:
+
+1. Start the backend with `npm run dev` from `apps/core`.
+2. Run the macOS app from Xcode.
+3. Click "Run static preview" in the dashboard.
+
+The macOS app uses `URLSession` to call `GET /scan-preview`. The backend runs `StaticThreatAgent` against mock normalized emails, and the UI shows passed, warning, and failed check counts plus per-check reason and evidence. Preview results are not persisted and do not use Gmail, OpenAI Agents SDK, or MCP.
 
 No Gmail, OpenAI Agents SDK, or MCP integration exists yet.

@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Step 7 adds the first rule-based Static Threat Agent preview endpoint.
+Step 8 connects the macOS dashboard to the Static Threat Agent preview endpoint.
 
 No Gmail credentials, OpenAI configuration, or MCP setup exists yet.
 
@@ -16,7 +16,7 @@ Run Codex from the repository root so it can pick up the project instructions in
 2. Select the `MailShieldAgent` scheme.
 3. Run the app.
 
-The app uses `URLSession` to call the local backend health endpoint and mock scan results endpoint from the dashboard.
+The app uses `URLSession` to call the local backend health endpoint, mock scan results endpoint, and Static Threat Agent preview endpoint from the dashboard.
 
 Local Xcode user data and `.DS_Store` files are ignored and should stay out of git.
 
@@ -123,13 +123,16 @@ npm run dev
 2. Run the macOS app from Xcode.
 3. Click "Check backend" in the dashboard.
 4. Click "Load mock scans" in the dashboard.
+5. Click "Run static preview" in the dashboard.
 
 The status card should show `Online` and the `mailshield-core` service name when the backend responds with `status: "ok"`. It should show `Offline` with an error message if the backend is not running.
 
 The scan UI should show recent mock scans. Selecting a scan shows subject, sender, risk level, risk score, summary, and per-agent checks. Each per-agent check is displayed as `passed`, `warning`, or `failed`.
 
-The backend must be running before loading scans. If `GET /scan-results` fails, the dashboard shows a simple error message.
+The Static Threat Agent preview UI should show mock normalized emails with passed, warning, and failed check counts. Selecting a preview email shows the normalized email summary and Static Threat Agent checks, including visual status, reason, and evidence when available.
+
+The backend must be running before loading scans or running the static preview. If `GET /scan-results` or `GET /scan-preview` fails, the dashboard shows a simple error message.
 
 No Gmail, OpenAI Agents SDK, or MCP integration exists yet.
 
-The mock scan results are persisted in local SQLite after seeding. They still do not use Gmail, OpenAI Agents SDK, or MCP yet.
+The mock scan results are persisted in local SQLite after seeding. Static preview results are not persisted. Neither flow uses Gmail, OpenAI Agents SDK, or MCP yet.

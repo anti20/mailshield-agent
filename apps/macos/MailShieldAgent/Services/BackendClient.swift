@@ -26,6 +26,13 @@ struct BackendClient {
         return try decoder.decode(ScanResultsResponse.self, from: data)
     }
 
+    func fetchScanPreview() async throws -> ScanPreviewResponse {
+        let url = baseURL.appending(path: "scan-preview")
+        let data = try await fetchData(from: url)
+
+        return try decoder.decode(ScanPreviewResponse.self, from: data)
+    }
+
     private func fetchData(from url: URL) async throws -> Data {
         let (data, response) = try await URLSession.shared.data(from: url)
 

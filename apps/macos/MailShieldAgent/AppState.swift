@@ -19,6 +19,11 @@ final class AppState: ObservableObject {
     @Published private(set) var isLoadingScanResults = false
     @Published private(set) var scanResultsErrorMessage: String?
 
+    @Published private(set) var scanPreviewItems: [ScanPreviewItem] = []
+    @Published var selectedScanPreviewItemID: ScanPreviewItem.ID?
+    @Published private(set) var isLoadingScanPreview = false
+    @Published private(set) var scanPreviewErrorMessage: String?
+
     private let backendClient: BackendClient
 
     var backendStatus: String {
@@ -31,6 +36,10 @@ final class AppState: ObservableObject {
 
     var selectedScanResult: EmailScanResult? {
         scanResults.first { $0.id == selectedScanResultID }
+    }
+
+    var selectedScanPreviewItem: ScanPreviewItem? {
+        scanPreviewItems.first { $0.id == selectedScanPreviewItemID }
     }
 
     init(backendClient: BackendClient = BackendClient()) {
@@ -84,5 +93,23 @@ final class AppState: ObservableObject {
         }
 
         isLoadingScanResults = false
+    }
+
+    func runStaticPreview() async {
+        isLoadingScanPreview = true
+        scanPreviewErrorMessage = nil
+
+        do {
+            let response = try await backendClient.fetchScanPreview()
+            scanPreviewItems = response.items
+
+            if selectedScanPreviewItemID == nil || selectedScanPreviewItem == nil {
+                selectedScanPreviewItemID = response.items.first?.id
+            }
+        } catch {
+            scanPreviewErrorMessage = error.localizedDescription
+        }
+
+        isLoadingScanPreview = false
     }
 }

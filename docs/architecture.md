@@ -13,7 +13,7 @@ MailShield Agent is planned as a local-first macOS email safety assistant. The s
 
 ## Current Implementation
 
-The current implementation includes a native SwiftUI macOS menu bar app in `apps/macos`. It shows a menu bar item, can open a dashboard window, checks backend health, and loads mock scan results into a recent scans UI.
+The current implementation includes a native SwiftUI macOS menu bar app in `apps/macos`. It shows a menu bar item, can open a dashboard window, checks backend health, loads mock scan results into a recent scans UI, and visualizes Static Threat Agent preview checks.
 
 The current backend skeleton lives in `apps/core`. It is a local TypeScript Node project that uses Express as the HTTP server on local port `3000` and SQLite for local scan history.
 
@@ -54,6 +54,8 @@ The backend initializes these tables on startup:
 The macOS dashboard now calls `http://localhost:3000/health` with `URLSession` through `BackendClient`. The response is decoded into a Swift model and updates the backend status card.
 
 The macOS dashboard also calls `http://localhost:3000/scan-results` with `URLSession` through `BackendClient`. The response shape is `{ "items": [...] }`, decoded into Swift scan result models, stored in `AppState`, and displayed as selectable recent scans with an explainable detail view.
+
+The macOS dashboard also calls `http://localhost:3000/scan-preview` with `URLSession` through `BackendClient`. The response is decoded into Swift preview models, stored in `AppState`, and displayed as a Static Threat Agent Preview section. The UI shows passed, warning, and failed check counts for each mock email, and the selected detail view shows per-check reason and evidence when available.
 
 ## Current App-To-Backend Flow
 
@@ -96,6 +98,12 @@ The route uses `ScanStore`, and `ScanStore` returns scan results from SQLite. Mo
 ## Current Static Threat Preview Flow
 
 ```text
+SwiftUI Dashboard
+  |
+  v
+BackendClient
+  |
+  v
 GET http://localhost:3000/scan-preview
   |
   v
@@ -111,7 +119,7 @@ StaticThreatAgent
 Mock NormalizedEmail inputs
 ```
 
-The preview flow does not write to SQLite. Persisted scan history still comes from `GET /scan-results` through `ScanStore`.
+The app now visualizes deterministic threat checks from the preview flow. The data is still mock normalized email data, and the preview flow does not write to SQLite. Persisted scan history still comes from `GET /scan-results` through `ScanStore`.
 
 ## Text Diagram
 
