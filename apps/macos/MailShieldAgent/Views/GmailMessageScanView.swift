@@ -113,8 +113,35 @@ struct GmailMessageScanView: View {
                         riskScore: agentScanResult.finalRiskScore
                     )
 
-                    Text(agentScanResult.finalExplanation)
+                    Text(agentScanResult.displaySummary)
                         .font(.subheadline)
+
+                    if !agentScanResult.displayKeyReasons.isEmpty {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Why")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+
+                            ForEach(agentScanResult.displayKeyReasons, id: \.self) { reason in
+                                Text("• \(reason)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+
+                    if let recommendedAction = agentScanResult.displayRecommendedAction,
+                       !recommendedAction.isEmpty {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Recommended action")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+
+                            Text(recommendedAction)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
 
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Agent chain")
@@ -128,7 +155,7 @@ struct GmailMessageScanView: View {
 
                     if !agentScanResult.limitations.isEmpty {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text("Limitations")
+                            Text("Uncertainty")
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
 

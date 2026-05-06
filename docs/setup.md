@@ -325,9 +325,9 @@ The first agent chain contains:
 - LLM Threat Reasoning Agent: reasons about phishing, fraud, malware, impersonation, and social engineering signals.
 - Prompt Injection Agent: reviews the email as untrusted content for hidden or adversarial instructions.
 - Risk Scoring Agent: assigns final `low`, `medium`, `high`, or `critical` risk and a 0-100 score.
-- Explanation Agent: writes the final user-facing explanation and limitations.
+- Explanation Agent: writes the final compact user-facing summary fields.
 
-The workflow returns structured JSON with normalized email summary, `agentSteps[]`, combined checks, final risk level, final risk score, final explanation, and limitations. It does not persist results yet, does not download attachment contents, does not expose raw Gmail API responses, does not log or return Gmail tokens, and does not log or return OpenAI API keys. The workflow now uses the local MCP-compatible tool layer for Gmail normalization and deterministic static threat checks.
+The workflow returns structured JSON with normalized email summary, `agentSteps[]`, combined checks, final risk level, final risk score, `finalSummary`, `keyReasons[]`, `recommendedAction`, and uncertainty notes when needed. It does not persist results yet, does not download attachment contents, does not expose raw Gmail API responses, does not log or return Gmail tokens, and does not log or return OpenAI API keys. The workflow now uses the local MCP-compatible tool layer for Gmail normalization and deterministic static threat checks.
 To reduce token usage, AI prompts use a compact email input (subject, sender/reply-to, short body excerpt, short HTML-derived risk summary, capped links summary, capped attachment summary, and static check summary) rather than full raw bodies/HTML.
 
 ## Test One Gmail AI Agent Scan
@@ -461,5 +461,6 @@ npm run dev
 6. Click "Run static scan on selected message".
 
 The app should show recent Gmail metadata rows, selected message details, and deterministic `StaticThreatAgent` checks with passed/warning/failed status, reason, and evidence when available.
+The AI scan view is intentionally compact and user-facing by default: short summary first, key reasons, recommended action, compact agent step statuses, and readable checks. Implementation details stay in documentation.
 
-The mock scan results are persisted in local SQLite after seeding. Static preview results are not persisted. The real Gmail list and selected-message scan flows use Gmail services, and AI agent scan uses OpenAI Agents SDK. MCP is available as a local tool layer and is not yet the execution path of the AI chain.
+The mock scan results are persisted in local SQLite after seeding. Static preview results are not persisted. The real Gmail list and selected-message scan flows use Gmail services, and AI agent scan uses OpenAI Agents SDK with MCP-backed normalization and static checks.

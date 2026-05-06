@@ -14,7 +14,7 @@ MailShield Agent is planned as a local-first macOS email safety assistant. The s
 ## Current Implementation
 
 The current implementation includes a native SwiftUI macOS menu bar app in `apps/macos`. It shows a menu bar item, can open a dashboard window, checks backend health, loads mock scan results into a recent scans UI, and visualizes Static Threat Agent preview checks.
-It also shows Gmail connection status, can open Gmail OAuth login in the default browser, displays the connected Gmail email address when available, loads recent Gmail message metadata, runs static scan for one selected Gmail message, and can run an OpenAI-powered AI agent scan for that selected message.
+It also shows Gmail connection status, can open Gmail OAuth login in the default browser, displays the connected Gmail email address when available, loads recent Gmail message metadata, runs static scan for one selected Gmail message, and can run an OpenAI-powered AI agent scan for that selected message with compact user-facing output.
 
 The current backend skeleton lives in `apps/core`. It is a local TypeScript Node project that uses Express as the HTTP server on local port `3000`, SQLite for local scan history and local development Gmail OAuth token storage, Gmail profile testing, recent Gmail message metadata fetching, one-message conversion into `NormalizedEmail`, one-message static scanning, and one-message OpenAI agent scanning.
 
@@ -189,7 +189,7 @@ GmailAgentScanService
        combined agent scan result
 ```
 
-Each step returns structured data. The combined result includes normalized email summary, `agentSteps[]`, combined checks, final risk level, final risk score, final explanation, and limitations. The workflow reuses the existing Gmail normalization flow and `StaticThreatAgent` baseline through the local MCP-compatible tool layer (`gmail.getNormalizedMessage` and `scan.runStaticThreatScan`). To reduce token usage, LLM steps receive a compact email input (short body excerpt, HTML-derived risk summary, capped links/attachments summary, and static-check summary) instead of full raw HTML/body payloads. It does not persist agent scan results yet, does not download attachment contents, does not expose raw Gmail API responses, does not log or return Gmail tokens, and does not log or return OpenAI API keys.
+Each step returns structured data. The combined result includes normalized email summary, `agentSteps[]`, combined checks, final risk level, final risk score, and compact user-facing fields (`finalSummary`, `keyReasons[]`, `recommendedAction`) plus uncertainty notes when needed. The workflow reuses the existing Gmail normalization flow and `StaticThreatAgent` baseline through the local MCP-compatible tool layer (`gmail.getNormalizedMessage` and `scan.runStaticThreatScan`). To reduce token usage, LLM steps receive a compact email input (short body excerpt, HTML-derived risk summary, capped links/attachments summary, and static-check summary) instead of full raw HTML/body payloads. It does not persist agent scan results yet, does not download attachment contents, does not expose raw Gmail API responses, does not log or return Gmail tokens, and does not log or return OpenAI API keys.
 
 If OpenAI rate limits are reached, the route returns HTTP `429` with a clear message for the macOS app.
 
@@ -246,7 +246,7 @@ The macOS dashboard also calls `http://localhost:3000/scan-results` with `URLSes
 
 The macOS dashboard also calls `http://localhost:3000/scan-preview` with `URLSession` through `BackendClient`. The response is decoded into Swift preview models, stored in `AppState`, and displayed as a Static Threat Agent Preview section. The UI shows passed, warning, and failed check counts for each mock email, and the selected detail view shows per-check reason and evidence when available.
 
-The macOS dashboard also calls `http://localhost:3000/gmail/messages/recent`, `http://localhost:3000/gmail/messages/:id/static-scan`, and `http://localhost:3000/gmail/messages/:id/agent-scan` through `BackendClient`. It displays recent Gmail message metadata, allows selecting one message, shows deterministic `StaticThreatAgent` checks, and shows AI agent chain steps plus final risk details for the selected message.
+The macOS dashboard also calls `http://localhost:3000/gmail/messages/recent`, `http://localhost:3000/gmail/messages/:id/static-scan`, and `http://localhost:3000/gmail/messages/:id/agent-scan` through `BackendClient`. It displays recent Gmail message metadata, allows selecting one message, shows deterministic `StaticThreatAgent` checks, and shows a compact AI result first (risk, summary, key reasons, recommended action) followed by concise agent step statuses and checks.
 
 ## Current App-To-Backend Flow
 

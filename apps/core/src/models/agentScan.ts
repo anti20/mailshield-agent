@@ -31,6 +31,9 @@ export type GmailAgentScanResult = {
   checks: AgentCheck[];
   finalRiskLevel: RiskLevel;
   finalRiskScore: number;
+  finalSummary: string;
+  keyReasons: string[];
+  recommendedAction: string;
   finalExplanation: string;
   limitations: string[];
 };

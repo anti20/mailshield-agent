@@ -6,8 +6,27 @@ struct GmailAgentScanResponse: Decodable, Equatable {
     let checks: [AgentCheck]
     let finalRiskLevel: RiskLevel
     let finalRiskScore: Int
+    let finalSummary: String?
+    let keyReasons: [String]?
+    let recommendedAction: String?
     let finalExplanation: String
     let limitations: [String]
+
+    var displaySummary: String {
+        if let finalSummary, !finalSummary.isEmpty {
+            return finalSummary
+        }
+
+        return finalExplanation
+    }
+
+    var displayKeyReasons: [String] {
+        keyReasons ?? []
+    }
+
+    var displayRecommendedAction: String? {
+        recommendedAction
+    }
 }
 
 struct NormalizedEmailSummary: Decodable, Equatable {
