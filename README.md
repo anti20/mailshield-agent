@@ -28,6 +28,7 @@ Step 2 complete: the local TypeScript backend exposes a health endpoint.
 Step 3 complete: the macOS dashboard can check the local backend health endpoint.
 Step 4 complete: the backend exposes mock email scan results.
 Step 5 complete: the macOS dashboard can load and display mock scan results.
+Step 6 complete: the backend persists scan history in local SQLite.
 
 ## Documentation
 
@@ -49,6 +50,14 @@ npm run dev
 ```
 
 The backend uses Express as its HTTP server and listens on port `3000` by default. Its first endpoint is:
+
+The backend uses SQLite for local scan history at:
+
+```text
+apps/core/data/mailshield.sqlite
+```
+
+On startup, the backend initializes the database and seeds the current mock scan results only when the database is empty. `GET /scan-results` returns scan results from SQLite. The database can also store seen Gmail message IDs for future Gmail polling, but Gmail is not connected yet.
 
 ```text
 GET http://localhost:3000/health
@@ -75,7 +84,7 @@ Verify it with curl:
 curl http://localhost:3000/scan-results
 ```
 
-`GET /scan-results` returns fake email scan results with per-agent checks. The mock data is not persisted and does not use Gmail, OpenAI Agents SDK, MCP, or a database yet.
+`GET /scan-results` returns scan results from local SQLite with per-agent checks. The initial mock data is seeded only when the database is empty and does not use Gmail, OpenAI Agents SDK, or MCP yet.
 
 Open and run the macOS app in Xcode:
 
@@ -91,6 +100,6 @@ To verify the mock scan results UI:
 2. Run the macOS app from Xcode.
 3. Click "Load mock scans" in the dashboard.
 
-The macOS app uses `URLSession` to call `GET /scan-results`. The backend returns static mock scan result data with per-agent checks, and the UI displays each check as `passed`, `warning`, or `failed`. The scan results are not persisted and do not use Gmail, OpenAI Agents SDK, MCP, or SQLite yet.
+The macOS app uses `URLSession` to call `GET /scan-results`. The backend returns SQLite-backed scan result data with per-agent checks, and the UI displays each check as `passed`, `warning`, or `failed`. Gmail, OpenAI Agents SDK, and MCP are not used yet.
 
-No Gmail, OpenAI Agents SDK, MCP, or database integration exists yet.
+No Gmail, OpenAI Agents SDK, or MCP integration exists yet.

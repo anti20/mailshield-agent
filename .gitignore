@@ -43,6 +43,9 @@ out/
 coverage/
 
 # Local databases
+apps/core/data/*.sqlite
+apps/core/data/*.sqlite-shm
+apps/core/data/*.sqlite-wal
 *.sqlite
 *.sqlite3
 *.db

@@ -2,9 +2,9 @@
 
 ## Current Status
 
-Step 5 connects the macOS dashboard to the backend mock scan results endpoint.
+Step 6 adds a local SQLite persistence foundation for backend scan history.
 
-No Gmail credentials, OpenAI configuration, MCP setup, or database setup exists yet.
+No Gmail credentials, OpenAI configuration, or MCP setup exists yet.
 
 ## Codex Setup
 
@@ -29,6 +29,8 @@ cd apps/core
 npm install
 ```
 
+`npm install` installs the SQLite dependency used by the local scan history store.
+
 Start the development server:
 
 ```bash
@@ -36,6 +38,14 @@ npm run dev
 ```
 
 The backend is a TypeScript Node project. It uses Express as the HTTP server and listens on port `3000` by default.
+
+The backend stores local scan history in SQLite at:
+
+```text
+apps/core/data/mailshield.sqlite
+```
+
+The database is created automatically on backend startup. Mock scan results are seeded only when the database is empty, and `GET /scan-results` returns scan results from SQLite.
 
 Verify the health endpoint:
 
@@ -68,7 +78,17 @@ Expected response shape:
 }
 ```
 
-`GET /scan-results` returns mock email scan result data. Each item includes per-agent checks, and each check has a `passed`, `warning`, or `failed` status. The data is not persisted and does not use Gmail, OpenAI Agents SDK, MCP, or a database yet.
+`GET /scan-results` returns SQLite-backed mock email scan result data. Each item includes per-agent checks, and each check has a `passed`, `warning`, or `failed` status. Seen Gmail message IDs can be stored locally for future Gmail polling. This does not use Gmail, OpenAI Agents SDK, or MCP yet.
+
+## Reset Local Data
+
+Stop the backend, then delete the local SQLite file:
+
+```bash
+rm apps/core/data/mailshield.sqlite
+```
+
+The next backend startup recreates the database and seeds the mock scan results again because the database is empty.
 
 ## Run Both Parts Together
 
@@ -89,6 +109,6 @@ The scan UI should show recent mock scans. Selecting a scan shows subject, sende
 
 The backend must be running before loading scans. If `GET /scan-results` fails, the dashboard shows a simple error message.
 
-No Gmail, OpenAI Agents SDK, MCP, or database integration exists yet.
+No Gmail, OpenAI Agents SDK, or MCP integration exists yet.
 
-The mock scan results are static backend data. They are not persisted and do not use Gmail, OpenAI Agents SDK, MCP, or SQLite yet.
+The mock scan results are persisted in local SQLite after seeding. They still do not use Gmail, OpenAI Agents SDK, or MCP yet.

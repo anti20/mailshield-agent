@@ -22,3 +22,6 @@
 - Static mock results keep UI development independent from external integrations and persistence.
 - The macOS UI is built against mock scan results before Gmail integration.
 - Mock scan results keep frontend development independent from external accounts, OAuth setup, Gmail API permissions, OpenAI usage, MCP tooling, and local persistence.
+- SQLite is used for local scan history in the backend.
+- Mock scan results are seeded into SQLite before real Gmail integration.
+- Seen Gmail message IDs are tracked locally so future Gmail polling can avoid reprocessing messages.

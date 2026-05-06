@@ -1,4 +1,8 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 const defaultPort = 3000;
+const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 function readPort(): number {
   const rawPort = process.env.PORT;
@@ -17,5 +21,6 @@ function readPort(): number {
 }
 
 export const config = {
+  databasePath: path.join(projectRoot, "data", "mailshield.sqlite"),
   port: readPort()
 };
