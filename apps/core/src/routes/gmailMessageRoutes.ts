@@ -4,7 +4,10 @@ import {
   GmailMessageNotFoundError
 } from "../gmail/GmailMessageService.js";
 import { GmailAuthNotConnectedError } from "../gmail/GmailProfileService.js";
-import { OpenAIConfigurationError } from "../services/GmailAgentScanService.js";
+import {
+  OpenAIConfigurationError,
+  OpenAIRateLimitError
+} from "../services/GmailAgentScanService.js";
 import type { GmailMessageService } from "../gmail/GmailMessageService.js";
 import type { GmailAgentScanService } from "../services/GmailAgentScanService.js";
 import type { GmailStaticScanService } from "../services/GmailStaticScanService.js";
@@ -145,6 +148,13 @@ function handleGmailMessageError(
 
   if (error instanceof OpenAIConfigurationError) {
     response.status(400).json({
+      error: error.message
+    });
+    return;
+  }
+
+  if (error instanceof OpenAIRateLimitError) {
+    response.status(429).json({
       error: error.message
     });
     return;

@@ -105,19 +105,35 @@ struct BackendClient {
         }
 
         guard (200..<300).contains(httpResponse.statusCode) else {
-            throw BackendClientError.invalidResponse(statusCode: httpResponse.statusCode)
+            let backendMessage = parseBackendErrorMessage(from: data)
+            throw BackendClientError.invalidResponse(
+                statusCode: httpResponse.statusCode,
+                backendMessage: backendMessage
+            )
         }
 
         return data
     }
+
+    private func parseBackendErrorMessage(from data: Data) -> String? {
+        guard !data.isEmpty else {
+            return nil
+        }
+
+        return try? decoder.decode(BackendErrorResponse.self, from: data).error
+    }
 }
 
 enum BackendClientError: LocalizedError {
-    case invalidResponse(statusCode: Int?)
+    case invalidResponse(statusCode: Int?, backendMessage: String? = nil)
 
     var errorDescription: String? {
         switch self {
-        case .invalidResponse(let statusCode):
+        case .invalidResponse(let statusCode, let backendMessage):
+            if let backendMessage, !backendMessage.isEmpty {
+                return backendMessage
+            }
+
             if let statusCode {
                 return "The backend returned HTTP \(statusCode)."
             }
@@ -125,4 +141,8 @@ enum BackendClientError: LocalizedError {
             return "The backend returned an unexpected response."
         }
     }
+}
+
+private struct BackendErrorResponse: Decodable {
+    let error: String
 }

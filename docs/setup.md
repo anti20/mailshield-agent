@@ -133,6 +133,7 @@ GOOGLE_CLIENT_SECRET=
 GOOGLE_REDIRECT_URI=http://localhost:3000/auth/gmail/callback
 GMAIL_SCOPES=https://www.googleapis.com/auth/gmail.readonly
 OPENAI_API_KEY=
+OPENAI_MODEL=gpt-4.1-mini
 ```
 
 The only intended Gmail scope for now is:
@@ -310,7 +311,10 @@ The AI agent scan uses the official OpenAI Agents SDK TypeScript package. Add an
 
 ```text
 OPENAI_API_KEY=
+OPENAI_MODEL=gpt-4.1-mini
 ```
+
+`OPENAI_MODEL` is optional and defaults to `gpt-4.1-mini` when omitted.
 
 The backend validates that `OPENAI_API_KEY` is present before running AI agent scans. The key must not be logged or returned in API responses. `StaticThreatAgent` still works without OpenAI through `GET /gmail/messages/:id/static-scan` and the macOS static scan button.
 
@@ -324,6 +328,7 @@ The first agent chain contains:
 - Explanation Agent: writes the final user-facing explanation and limitations.
 
 The workflow returns structured JSON with normalized email summary, `agentSteps[]`, combined checks, final risk level, final risk score, final explanation, and limitations. It does not persist results yet, does not download attachment contents, does not expose raw Gmail API responses, does not log or return Gmail tokens, and does not log or return OpenAI API keys. The workflow now uses the local MCP-compatible tool layer for Gmail normalization and deterministic static threat checks.
+To reduce token usage, AI prompts use a compact email input (subject, sender/reply-to, short body excerpt, short HTML-derived risk summary, capped links summary, capped attachment summary, and static check summary) rather than full raw bodies/HTML.
 
 ## Test One Gmail AI Agent Scan
 
@@ -353,6 +358,7 @@ curl -X POST http://localhost:3000/gmail/messages/<gmail-message-id>/agent-scan
 ```
 
 `POST /gmail/messages/:id/agent-scan` uses the stored Gmail OAuth token, reuses the Gmail normalization flow, runs `StaticThreatAgent`, and runs the OpenAI-powered agent chain. `OPENAI_API_KEY` is required for this endpoint. Attachment contents are not downloaded and scan results are not persisted yet.
+If OpenAI rate limits are hit, the endpoint returns HTTP `429` with a clear error message so the macOS app can show actionable feedback.
 
 ## Verify Local MCP Tool Layer
 

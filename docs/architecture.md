@@ -163,6 +163,7 @@ The first real OpenAI-powered agent chaining workflow uses the official OpenAI A
 
 ```text
 OPENAI_API_KEY
+OPENAI_MODEL (optional, defaults to gpt-4.1-mini)
 ```
 
 The backend validates that `OPENAI_API_KEY` exists before running AI agent scans. The key is never logged or returned. `StaticThreatAgent` and the existing static scan endpoints still work without OpenAI.
@@ -175,11 +176,8 @@ POST /gmail/messages/:id/agent-scan
   v
 GmailAgentScanService
   |
-  +--> GmailMessageService.getNormalizedMessage
-  |      |
-  |      v
-  |    NormalizedEmail
-  |
+  +--> MCP tool: gmail.getNormalizedMessage
+  +--> MCP tool: scan.runStaticThreatScan
   +--> Email Context Agent
   +--> Static Threat Agent
   +--> LLM Threat Reasoning Agent
@@ -191,7 +189,9 @@ GmailAgentScanService
        combined agent scan result
 ```
 
-Each step returns structured data. The combined result includes normalized email summary, `agentSteps[]`, combined checks, final risk level, final risk score, final explanation, and limitations. The workflow reuses the existing Gmail normalization flow and `StaticThreatAgent` baseline through the local MCP-compatible tool layer (`gmail.getNormalizedMessage` and `scan.runStaticThreatScan`). It does not persist agent scan results yet, does not download attachment contents, does not expose raw Gmail API responses, does not log or return Gmail tokens, and does not log or return OpenAI API keys.
+Each step returns structured data. The combined result includes normalized email summary, `agentSteps[]`, combined checks, final risk level, final risk score, final explanation, and limitations. The workflow reuses the existing Gmail normalization flow and `StaticThreatAgent` baseline through the local MCP-compatible tool layer (`gmail.getNormalizedMessage` and `scan.runStaticThreatScan`). To reduce token usage, LLM steps receive a compact email input (short body excerpt, HTML-derived risk summary, capped links/attachments summary, and static-check summary) instead of full raw HTML/body payloads. It does not persist agent scan results yet, does not download attachment contents, does not expose raw Gmail API responses, does not log or return Gmail tokens, and does not log or return OpenAI API keys.
+
+If OpenAI rate limits are reached, the route returns HTTP `429` with a clear message for the macOS app.
 
 ## Current Local MCP Tool Layer
 
