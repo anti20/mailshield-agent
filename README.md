@@ -35,6 +35,10 @@ Step 9 complete: the backend prepares a readonly Gmail OAuth flow.
 Step 10 complete: Gmail OAuth token persistence and profile test endpoint are in place.
 Step 11 complete: the backend can fetch recent Gmail message metadata.
 Step 12 complete: the backend can convert one Gmail message into `NormalizedEmail`.
+Step 13 complete: the backend can run `StaticThreatAgent` on one real Gmail message.
+Step 14 complete: the macOS app can show Gmail connection status and connected account email.
+Step 15 complete: Gmail OAuth config-status and safer setup UX are in place.
+Step 16 complete: the macOS app can load recent Gmail messages and run static scan on a selected message.
 
 ## Documentation
 
@@ -111,17 +115,23 @@ The backend also prepares a Gmail OAuth flow:
 ```text
 GET http://localhost:3000/auth/gmail/start
 GET http://localhost:3000/auth/gmail/callback
+GET http://localhost:3000/auth/gmail/config-status
 GET http://localhost:3000/auth/gmail/status
 GET http://localhost:3000/auth/gmail/profile
 GET http://localhost:3000/gmail/messages/recent
 GET http://localhost:3000/gmail/messages/:id/normalized
+GET http://localhost:3000/gmail/messages/:id/static-scan
 ```
 
-Configure `apps/core/.env` from `apps/core/.env.example` before starting OAuth. The intended Gmail scope is readonly access only: `https://www.googleapis.com/auth/gmail.readonly`. The callback persists Gmail OAuth tokens in local SQLite for development and returns safe metadata only. Full tokens are not logged or returned. `GET /auth/gmail/status` returns safe connection metadata, and `GET /auth/gmail/profile` verifies the Gmail API connection with safe profile data.
+Configure `apps/core/.env` from `apps/core/.env.example` before starting OAuth. The intended Gmail scope is readonly access only: `https://www.googleapis.com/auth/gmail.readonly`. `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are app-level OAuth configuration values, not the user's Gmail login. `GET /auth/gmail/config-status` reports whether app OAuth credentials are configured without exposing secrets.
 
-`GET /gmail/messages/recent` uses the stored Gmail OAuth token to fetch recent Gmail message metadata. Returned messages are normalized to id, thread id, subject, sender, snippet, received time, labels, and attachment presence. Attachment contents are not downloaded. Gmail email scanning is still not implemented. See [Setup](docs/setup.md) for the full local Google Cloud setup steps.
+After app OAuth configuration is valid, the user still connects their Gmail account through the browser using `GET /auth/gmail/start`. The callback persists Gmail OAuth tokens in local SQLite for development and returns safe metadata only. Full tokens are not logged or returned. `GET /auth/gmail/status` returns safe connection metadata, and `GET /auth/gmail/profile` verifies the Gmail API connection with safe profile data.
+
+`GET /gmail/messages/recent` uses the stored Gmail OAuth token to fetch recent Gmail message metadata. Returned messages are normalized to id, thread id, subject, sender, snippet, received time, labels, and attachment presence. Attachment contents are not downloaded. This endpoint does not run scanning. See [Setup](docs/setup.md) for the full local Google Cloud setup steps.
 
 `GET /gmail/messages/:id/normalized` uses the stored Gmail OAuth token to fetch one real Gmail message and convert it into the existing `NormalizedEmail` shape (subject, sender, optional reply-to, text/html body when available, links, attachment metadata, and received time). Attachment contents are not downloaded, and the normalized email is not scanned or persisted yet. OpenAI Agents SDK and MCP are still not implemented.
+
+`GET /gmail/messages/:id/static-scan` uses the same normalization flow and runs the rule-based deterministic `StaticThreatAgent` on one real Gmail message. The response includes the normalized email and generated checks. Attachment contents are not downloaded, and scan results are not persisted yet. OpenAI Agents SDK and MCP are still not implemented.
 
 Open and run the macOS app in Xcode:
 
@@ -130,6 +140,10 @@ Open and run the macOS app in Xcode:
 3. Run the app from Xcode.
 
 The dashboard can now check backend health with `URLSession`. Click "Check backend" to verify that the local core service is running.
+
+The dashboard now also shows Gmail OAuth app configuration status and Gmail account connection status from the backend. If OAuth credentials are missing, the app shows a clear message to add them to `apps/core/.env`. If OAuth is configured, "Open Gmail login" starts browser-based account connection at `http://localhost:3000/auth/gmail/start`, then the connected email address is shown after refresh.
+
+The dashboard can now load recent Gmail message metadata from the connected account, let the user select one message, and run deterministic `StaticThreatAgent` checks for that selected message. The UI displays passed, warning, and failed checks with reason and evidence.
 
 To verify the mock scan results UI:
 
@@ -147,4 +161,4 @@ To verify the Static Threat Agent preview UI:
 
 The macOS app uses `URLSession` to call `GET /scan-preview`. The backend runs `StaticThreatAgent` against mock normalized emails, and the UI shows passed, warning, and failed check counts plus per-check reason and evidence. Preview results are not persisted and do not use Gmail, OpenAI Agents SDK, or MCP.
 
-Gmail OAuth, profile testing, and recent message metadata fetching are prepared, but Gmail email scanning is not implemented yet. OpenAI Agents SDK and MCP integration do not exist yet.
+Gmail OAuth configuration checks, profile testing, recent message metadata fetching, one-message normalization, one-message static scanning, macOS Gmail connection visibility, and selected-message scan UI are implemented. The backend currently supports one local connected Gmail account; multi-account support is planned for a later step. A future hosted OAuth broker could remove local client-secret setup. Persisted Gmail scan history and broader workflow orchestration are not implemented yet. OpenAI Agents SDK and MCP integration do not exist yet.

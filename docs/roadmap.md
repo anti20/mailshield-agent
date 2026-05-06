@@ -16,7 +16,11 @@ MailShield Agent will be built in small commit-friendly steps.
 10. Complete: Gmail token persistence and profile test endpoint
 11. Complete: Fetch recent Gmail message metadata
 12. Complete: Convert one Gmail message into NormalizedEmail input for StaticThreatAgent
-13. Next: Run StaticThreatAgent on normalized Gmail messages
-14. OpenAI Agents SDK workflow
-15. MCP tool layer
-16. Notifications
+13. Complete: Run StaticThreatAgent on one normalized Gmail message
+14. Complete: Show Gmail connection status and connected account in macOS app
+15. Complete: Add Gmail OAuth config-status and safe setup UX
+16. Complete: Load real Gmail messages in macOS app and scan selected message
+17. Next: Persist Gmail static scan results in SQLite
+18. OpenAI Agents SDK workflow
+19. MCP tool layer
+20. Notifications

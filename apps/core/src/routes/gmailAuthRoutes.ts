@@ -17,6 +17,22 @@ export function gmailAuthRoutes(
 ): Router {
   const router = Router();
 
+  router.get("/auth/gmail/config-status", (_request, response, next) => {
+    try {
+      const configStatus = gmailAuthService.getConfigStatus();
+
+      response.json({
+        provider: "gmail",
+        configured: configStatus.configured,
+        missing: configStatus.missing,
+        redirectUriConfigured: configStatus.redirectUriConfigured,
+        scopesConfigured: configStatus.scopesConfigured
+      });
+    } catch (error) {
+      handleGmailAuthError(error, response, next);
+    }
+  });
+
   router.get("/auth/gmail/start", (_request, response, next) => {
     try {
       response.redirect(gmailAuthService.buildAuthorizationUrl());
@@ -64,6 +80,7 @@ export function gmailAuthRoutes(
 
   router.get("/auth/gmail/profile", async (_request, response, next) => {
     try {
+      assertGmailOAuthConfigured(gmailAuthService);
       response.json(await gmailProfileService.getProfile());
     } catch (error) {
       handleGmailAuthError(error, response, next);
@@ -88,6 +105,16 @@ function toStatusResponse(storedToken: StoredGmailToken) {
     scope: storedToken.scope,
     expiresAt: storedToken.expiryDate ? new Date(storedToken.expiryDate).toISOString() : undefined
   };
+}
+
+function assertGmailOAuthConfigured(gmailAuthService: GmailAuthService): void {
+  const configStatus = gmailAuthService.getConfigStatus();
+
+  if (!configStatus.configured) {
+    throw new GmailAuthConfigurationError(
+      `Missing Gmail OAuth credentials: ${configStatus.missing.join(", ")}. Add them to apps/core/.env.`
+    );
+  }
 }
 
 function handleGmailAuthError(

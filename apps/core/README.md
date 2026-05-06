@@ -4,7 +4,7 @@ MailShield Core is the local TypeScript backend for MailShield Agent.
 
 ## Current Status
 
-The backend currently exposes a health endpoint, SQLite-backed mock email scan results, a rule-based Static Threat Agent preview, readonly Gmail OAuth endpoints, local token persistence, a Gmail profile test endpoint, recent Gmail message metadata fetching, and Gmail-to-NormalizedEmail conversion for one message.
+The backend currently exposes a health endpoint, SQLite-backed mock email scan results, a rule-based Static Threat Agent preview, readonly Gmail OAuth endpoints, local token persistence, Gmail OAuth config-status metadata, a Gmail profile test endpoint, recent Gmail message metadata fetching, Gmail-to-NormalizedEmail conversion for one message, and one-message Gmail static scanning.
 
 ## Setup
 
@@ -69,6 +69,12 @@ http://localhost:3000/auth/gmail/start
 
 `GET /auth/gmail/start` redirects to Google OAuth, and `GET /auth/gmail/callback` stores tokens in local SQLite and returns safe token metadata after the callback. Full tokens are not logged or returned.
 
+Verify Gmail OAuth app configuration status:
+
+```bash
+curl http://localhost:3000/auth/gmail/config-status
+```
+
 Verify Gmail connection status:
 
 ```bash
@@ -81,7 +87,7 @@ Verify the Gmail profile endpoint after OAuth:
 curl http://localhost:3000/auth/gmail/profile
 ```
 
-`GET /auth/gmail/status` returns safe connection metadata. `GET /auth/gmail/profile` verifies the Gmail API connection with safe profile data.
+`GET /auth/gmail/config-status` reports backend OAuth app configuration state only, without exposing client secrets. `GET /auth/gmail/status` returns safe user connection metadata. `GET /auth/gmail/profile` verifies the Gmail API connection with safe profile data. The local MVP currently supports one connected Gmail account.
 
 Fetch recent Gmail message metadata after OAuth:
 
@@ -95,7 +101,7 @@ Optionally limit the result count:
 curl "http://localhost:3000/gmail/messages/recent?limit=5"
 ```
 
-`GET /gmail/messages/recent` uses the stored Gmail OAuth token and returns normalized message metadata only. Attachment contents are not downloaded. Gmail scanning is not implemented yet. This does not use OpenAI or MCP.
+`GET /gmail/messages/recent` uses the stored Gmail OAuth token and returns normalized message metadata only. Attachment contents are not downloaded. This endpoint does not run scanning. This does not use OpenAI or MCP.
 
 Fetch one Gmail message as `NormalizedEmail` after OAuth:
 
@@ -103,6 +109,14 @@ Fetch one Gmail message as `NormalizedEmail` after OAuth:
 curl http://localhost:3000/gmail/messages/<gmail-message-id>/normalized
 ```
 
-`GET /gmail/messages/:id/normalized` uses the stored Gmail OAuth token, fetches one real Gmail message, and converts it into the existing `NormalizedEmail` shape for future `StaticThreatAgent` input. Attachment contents are not downloaded, the normalized email is not persisted, and Gmail scanning is not implemented yet. This does not use OpenAI or MCP.
+`GET /gmail/messages/:id/normalized` uses the stored Gmail OAuth token, fetches one real Gmail message, and converts it into the existing `NormalizedEmail` shape for future `StaticThreatAgent` input. Attachment contents are not downloaded, the normalized email is not persisted, and this endpoint does not run scanning. This does not use OpenAI or MCP.
+
+Run a static scan on one normalized Gmail message:
+
+```bash
+curl http://localhost:3000/gmail/messages/<gmail-message-id>/static-scan
+```
+
+`GET /gmail/messages/:id/static-scan` uses the existing Gmail normalization flow and runs the rule-based deterministic `StaticThreatAgent` on one real Gmail message. The response includes the normalized email and generated checks. Attachment contents are not downloaded, scan results are not persisted in this step, and this does not use OpenAI or MCP.
 
 To reset local data, stop the backend and delete `apps/core/data/mailshield.sqlite`.

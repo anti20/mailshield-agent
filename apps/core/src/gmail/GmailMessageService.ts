@@ -27,6 +27,20 @@ const normalizedMessageFields = [
 
 const metadataHeaders = ["Subject", "From", "Date", "Reply-To"];
 
+export class GmailMessageNotFoundError extends Error {
+  constructor(messageId: string) {
+    super(`Gmail message not found for id: ${messageId}`);
+    this.name = "GmailMessageNotFoundError";
+  }
+}
+
+export class GmailMessageNormalizationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "GmailMessageNormalizationError";
+  }
+}
+
 export class GmailMessageService {
   constructor(
     private readonly gmailAuthService: GmailAuthService,
@@ -54,13 +68,30 @@ export class GmailMessageService {
 
   async getNormalizedMessage(messageId: string): Promise<NormalizedEmail> {
     const { client, gmail, storedToken } = this.createAuthorizedGmail();
-    const messageResponse = await gmail.users.messages.get({
-      userId: "me",
-      id: messageId,
-      format: "full",
-      fields: normalizedMessageFields
-    });
-    const message = messageResponse.data;
+    let message: gmail_v1.Schema$Message | undefined;
+
+    try {
+      const messageResponse = await gmail.users.messages.get({
+        userId: "me",
+        id: messageId,
+        format: "full",
+        fields: normalizedMessageFields
+      });
+      message = messageResponse.data;
+    } catch (error) {
+      if (readErrorStatus(error) === 404) {
+        throw new GmailMessageNotFoundError(messageId);
+      }
+
+      throw error;
+    }
+
+    if (!message) {
+      throw new GmailMessageNormalizationError(
+        `Unable to normalize Gmail message ${messageId}: empty message response.`
+      );
+    }
+
     const headers = message.payload?.headers ?? [];
     const body = this.extractBodyAndAttachments(message.payload);
     const bodyText = joinBodyContent(body.textParts);
@@ -68,7 +99,7 @@ export class GmailMessageService {
 
     this.saveRefreshedTokenIfNeeded(storedToken, client.credentials);
 
-    return {
+    const normalizedEmail: NormalizedEmail = {
       id: `email_${message.id ?? messageId}`,
       gmailMessageId: message.id ?? messageId,
       threadId: message.threadId ?? "",
@@ -81,6 +112,14 @@ export class GmailMessageService {
       attachments: body.attachments,
       receivedAt: this.readReceivedAt(this.readHeader(headers, "Date"), message.internalDate)
     };
+
+    if (!normalizedEmail.id || !normalizedEmail.gmailMessageId) {
+      throw new GmailMessageNormalizationError(
+        `Unable to normalize Gmail message ${messageId}: missing required identifiers.`
+      );
+    }
+
+    return normalizedEmail;
   }
 
   private async getMessageMetadata(
@@ -367,4 +406,25 @@ function stripHtml(html?: string): string {
   }
 
   return html.replace(/<[^>]*>/g, " ");
+}
+
+function readErrorStatus(error: unknown): number | undefined {
+  if (typeof error !== "object" || error === null) {
+    return undefined;
+  }
+
+  const maybeError = error as {
+    status?: unknown;
+    response?: { status?: unknown };
+  };
+
+  if (typeof maybeError.status === "number") {
+    return maybeError.status;
+  }
+
+  if (typeof maybeError.response?.status === "number") {
+    return maybeError.response.status;
+  }
+
+  return undefined;
 }

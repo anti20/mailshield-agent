@@ -2,9 +2,9 @@
 
 ## Current Status
 
-Step 12 converts one Gmail message from the connected account into `NormalizedEmail`.
+Step 16 adds real Gmail message loading and selected-message static scan UI in the macOS app.
 
-Gmail scanning, OpenAI configuration, and MCP setup do not exist yet.
+Persisted Gmail scan history, OpenAI configuration, and MCP setup do not exist yet.
 
 ## Codex Setup
 
@@ -17,6 +17,8 @@ Run Codex from the repository root so it can pick up the project instructions in
 3. Run the app.
 
 The app uses `URLSession` to call the local backend health endpoint, mock scan results endpoint, and Static Threat Agent preview endpoint from the dashboard.
+The app also calls Gmail auth status/profile endpoints to show Gmail connection state and connected account email.
+It can also call recent Gmail message and one-message static scan endpoints for selected-message review.
 
 Local Xcode user data and `.DS_Store` files are ignored and should stay out of git.
 
@@ -103,7 +105,9 @@ Expected response shape:
 
 ## Gmail OAuth Setup
 
-Gmail OAuth is implemented in the TypeScript backend, and OAuth tokens are persisted locally in SQLite for development. Recent Gmail message metadata fetching is implemented through `GET /gmail/messages/recent`, and one-message normalization is implemented through `GET /gmail/messages/:id/normalized`. Gmail scanning is not implemented yet. Full access tokens or refresh tokens must not be logged or returned in responses.
+Gmail OAuth is implemented in the TypeScript backend, and OAuth tokens are persisted locally in SQLite for development. Recent Gmail message metadata fetching is implemented through `GET /gmail/messages/recent`, one-message normalization is implemented through `GET /gmail/messages/:id/normalized`, and one-message static scanning is implemented through `GET /gmail/messages/:id/static-scan`. Full access tokens or refresh tokens must not be logged or returned in responses.
+
+Google OAuth client credentials (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`) are app configuration, not the user's Gmail login.
 
 1. Create or use a Google Cloud project.
 2. Enable the Gmail API.
@@ -150,6 +154,15 @@ http://localhost:3000/auth/gmail/start
 ```
 
 `GET /auth/gmail/start` begins the OAuth flow and redirects to Google. `GET /auth/gmail/callback` handles the OAuth callback, stores token data in the local `gmail_auth_tokens` SQLite table, and returns safe token metadata only when configuration is present. This OAuth flow does not use OpenAI Agents SDK or MCP.
+The Gmail account is selected in the browser during this OAuth flow. The backend currently supports one local connected Gmail account for development; multi-account support is planned later.
+
+Verify OAuth app configuration status:
+
+```bash
+curl http://localhost:3000/auth/gmail/config-status
+```
+
+`GET /auth/gmail/config-status` reports whether backend OAuth credentials are configured without exposing secrets.
 
 ## Test Gmail Connection
 
@@ -230,7 +243,7 @@ curl http://localhost:3000/gmail/messages/recent
 curl "http://localhost:3000/gmail/messages/recent?limit=5"
 ```
 
-`GET /gmail/messages/recent` fetches recent Gmail message metadata with the stored Gmail OAuth token. The default limit is `10`, and the maximum limit is `25`. Returned messages are normalized before leaving the backend and include id, thread id, subject, sender, snippet, received time, label IDs, and whether attachments are present. Attachment contents are not downloaded, fetched messages are not persisted in this step, Gmail email scanning is not implemented yet, and this step does not use OpenAI Agents SDK or MCP.
+`GET /gmail/messages/recent` fetches recent Gmail message metadata with the stored Gmail OAuth token. The default limit is `10`, and the maximum limit is `25`. Returned messages are normalized before leaving the backend and include id, thread id, subject, sender, snippet, received time, label IDs, and whether attachments are present. Attachment contents are not downloaded, fetched messages are not persisted in this step, this endpoint does not run scanning, and this step does not use OpenAI Agents SDK or MCP.
 
 ## Test One Normalized Gmail Message
 
@@ -259,7 +272,36 @@ curl http://localhost:3000/gmail/messages/recent
 curl http://localhost:3000/gmail/messages/<gmail-message-id>/normalized
 ```
 
-`GET /gmail/messages/:id/normalized` uses the stored Gmail OAuth token to fetch one real Gmail message and convert it into the existing `NormalizedEmail` format that prepares Gmail input for `StaticThreatAgent`. The response includes subject, sender, optional reply-to, body text/html when available, extracted links, attachment metadata, and received time. Attachment contents are not downloaded, the normalized email is not scanned yet, it is not persisted yet, and this step does not use OpenAI Agents SDK or MCP.
+`GET /gmail/messages/:id/normalized` uses the stored Gmail OAuth token to fetch one real Gmail message and convert it into the existing `NormalizedEmail` format that prepares Gmail input for `StaticThreatAgent`. The response includes subject, sender, optional reply-to, body text/html when available, extracted links, attachment metadata, and received time. Attachment contents are not downloaded, the normalized email is not persisted yet, this endpoint does not run scanning, and this step does not use OpenAI Agents SDK or MCP.
+
+## Test One Gmail Static Scan
+
+1. Start the backend:
+
+```bash
+cd apps/core
+npm run dev
+```
+
+2. Complete Gmail OAuth if needed:
+
+```text
+http://localhost:3000/auth/gmail/start
+```
+
+3. Fetch recent message metadata to get an id:
+
+```bash
+curl http://localhost:3000/gmail/messages/recent
+```
+
+4. Run static scan on one Gmail message:
+
+```bash
+curl http://localhost:3000/gmail/messages/<gmail-message-id>/static-scan
+```
+
+`GET /gmail/messages/:id/static-scan` scans one real Gmail message by reusing the normalization flow and running the deterministic rule-based `StaticThreatAgent`. The response includes the normalized email and generated checks. Attachment contents are not downloaded, scan results are not persisted in this step, and this step does not use OpenAI Agents SDK or MCP.
 
 ## Reset Local Data
 
@@ -293,6 +335,41 @@ The Static Threat Agent preview UI should show mock normalized emails with passe
 
 The backend must be running before loading scans or running the static preview. If `GET /scan-results` or `GET /scan-preview` fails, the dashboard shows a simple error message.
 
-Gmail OAuth tokens are persisted locally for development, the Gmail profile endpoint can verify the Gmail API connection, recent Gmail message metadata can be fetched, and one message can be converted into `NormalizedEmail`. Gmail scanning is not implemented yet. OpenAI Agents SDK and MCP integration do not exist yet.
+Gmail OAuth tokens are persisted locally for development, the Gmail profile endpoint can verify the Gmail API connection, recent Gmail message metadata can be fetched, one message can be converted into `NormalizedEmail`, and one message can be scanned with `StaticThreatAgent`. Scan results for this flow are not persisted yet. OpenAI Agents SDK and MCP integration do not exist yet.
+
+## Verify Gmail Account Visibility In macOS App
+
+1. Start the backend:
+
+```bash
+cd apps/core
+npm run dev
+```
+
+2. Run the macOS app from Xcode.
+3. In the dashboard, click "Open Gmail login" to open `http://localhost:3000/auth/gmail/start` in the default browser.
+4. Complete Google OAuth in the browser.
+5. Return to the app and click "Refresh Gmail status".
+
+The dashboard should show OAuth app configuration status and Gmail account connection status. If OAuth credentials are missing, it shows a clear message to add them to `apps/core/.env`. If OAuth is configured, "Open Gmail login" is available and the connected Gmail email address is shown when available.
+
+A future hosted OAuth broker could remove local client-secret setup from the developer machine.
+
+## Verify Real Gmail Message List And Selected Scan In macOS App
+
+1. Start the backend:
+
+```bash
+cd apps/core
+npm run dev
+```
+
+2. Run the macOS app from Xcode.
+3. Confirm Gmail OAuth app config is `Configured` and connect an account if needed.
+4. Click "Load recent Gmail" in the "Real Gmail Messages" section.
+5. Select a message from the list.
+6. Click "Run static scan on selected message".
+
+The app should show recent Gmail metadata rows, selected message details, and deterministic `StaticThreatAgent` checks with passed/warning/failed status, reason, and evidence when available.
 
 The mock scan results are persisted in local SQLite after seeding. Static preview results are not persisted. Neither flow uses Gmail, OpenAI Agents SDK, or MCP yet.

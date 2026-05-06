@@ -13,7 +13,11 @@ export class ScanPipeline {
   previewEmails(emails: NormalizedEmail[]): ScanPreviewItem[] {
     return emails.map((email) => ({
       email,
-      checks: this.staticThreatAgent.analyze(email)
+      checks: this.scanEmail(email)
     }));
+  }
+
+  scanEmail(email: NormalizedEmail): AgentCheck[] {
+    return this.staticThreatAgent.analyze(email);
   }
 }

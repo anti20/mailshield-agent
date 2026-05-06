@@ -8,6 +8,13 @@ export type GmailAuthConfig = {
   scopes: string[];
 };
 
+export type GmailOAuthConfigStatus = {
+  configured: boolean;
+  missing: string[];
+  redirectUriConfigured: boolean;
+  scopesConfigured: boolean;
+};
+
 export type GmailTokenMetadata = {
   hasAccessToken: boolean;
   hasRefreshToken: boolean;
@@ -40,6 +47,25 @@ export class GmailAuthRequestError extends Error {
 
 export class GmailAuthService {
   constructor(private readonly config: GmailAuthConfig) {}
+
+  getConfigStatus(): GmailOAuthConfigStatus {
+    const missing: string[] = [];
+
+    if (!this.config.clientId) {
+      missing.push("GOOGLE_CLIENT_ID");
+    }
+
+    if (!this.config.clientSecret) {
+      missing.push("GOOGLE_CLIENT_SECRET");
+    }
+
+    return {
+      configured: missing.length === 0,
+      missing,
+      redirectUriConfigured: Boolean(this.config.redirectUri),
+      scopesConfigured: this.config.scopes.length > 0
+    };
+  }
 
   buildAuthorizationUrl(): string {
     const client = this.createClient();
@@ -100,14 +126,24 @@ export class GmailAuthService {
   }
 
   private assertConfigured(): void {
-    if (!this.config.clientId || !this.config.clientSecret || !this.config.redirectUri) {
+    const configStatus = this.getConfigStatus();
+
+    if (!configStatus.configured) {
       throw new GmailAuthConfigurationError(
-        "Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REDIRECT_URI before starting Gmail OAuth."
+        `Missing Gmail OAuth credentials: ${configStatus.missing.join(", ")}. Add them to apps/core/.env.`
+      );
+    }
+
+    if (!this.config.redirectUri) {
+      throw new GmailAuthConfigurationError(
+        "Missing GOOGLE_REDIRECT_URI. Add it to apps/core/.env before starting Gmail OAuth."
       );
     }
 
     if (this.config.scopes.length === 0) {
-      throw new GmailAuthConfigurationError("Set GMAIL_SCOPES before starting Gmail OAuth.");
+      throw new GmailAuthConfigurationError(
+        "Missing GMAIL_SCOPES. Add at least one scope before starting Gmail OAuth."
+      );
     }
   }
 

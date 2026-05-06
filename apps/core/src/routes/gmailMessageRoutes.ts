@@ -1,6 +1,11 @@
 import { Router } from "express";
+import {
+  GmailMessageNormalizationError,
+  GmailMessageNotFoundError
+} from "../gmail/GmailMessageService.js";
 import { GmailAuthNotConnectedError } from "../gmail/GmailProfileService.js";
 import type { GmailMessageService } from "../gmail/GmailMessageService.js";
+import type { GmailStaticScanService } from "../services/GmailStaticScanService.js";
 
 const defaultLimit = 10;
 const maxLimit = 25;
@@ -12,7 +17,10 @@ class GmailMessageRequestError extends Error {
   }
 }
 
-export function gmailMessageRoutes(gmailMessageService: GmailMessageService): Router {
+export function gmailMessageRoutes(
+  gmailMessageService: GmailMessageService,
+  gmailStaticScanService: GmailStaticScanService
+): Router {
   const router = Router();
 
   router.get("/gmail/messages/recent", async (request, response, next) => {
@@ -32,6 +40,17 @@ export function gmailMessageRoutes(gmailMessageService: GmailMessageService): Ro
       const item = await gmailMessageService.getNormalizedMessage(messageId);
 
       response.json({ item });
+    } catch (error) {
+      handleGmailMessageError(error, response, next);
+    }
+  });
+
+  router.get("/gmail/messages/:id/static-scan", async (request, response, next) => {
+    try {
+      const messageId = readMessageId(request.params.id);
+      const result = await gmailStaticScanService.scanMessage(messageId);
+
+      response.json(result);
     } catch (error) {
       handleGmailMessageError(error, response, next);
     }
@@ -80,6 +99,20 @@ function handleGmailMessageError(
 
   if (error instanceof GmailMessageRequestError) {
     response.status(400).json({
+      error: error.message
+    });
+    return;
+  }
+
+  if (error instanceof GmailMessageNotFoundError) {
+    response.status(404).json({
+      error: error.message
+    });
+    return;
+  }
+
+  if (error instanceof GmailMessageNormalizationError) {
+    response.status(422).json({
       error: error.message
     });
     return;

@@ -21,6 +21,57 @@ struct DashboardView: View {
                     }
                 )
 
+                GmailConnectionCardView(
+                    oauthConfigurationStatus: appState.gmailOAuthConfigurationStatus.rawValue,
+                    oauthConfigurationMessage: appState.gmailOAuthConfigurationMessage,
+                    isOAuthConfigured: appState.isGmailOAuthConfigured,
+                    status: appState.gmailConnectionStatus.rawValue,
+                    connectedEmailAddress: appState.connectedGmailEmailAddress,
+                    statusMessage: appState.gmailStatusMessage,
+                    isLoading: appState.isLoadingGmailConnection,
+                    refreshAction: {
+                        Task {
+                            await appState.refreshGmailConnection()
+                        }
+                    },
+                    openLoginAction: {
+                        appState.openGmailLogin()
+                    }
+                )
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Real Gmail Messages")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+
+                    HStack(alignment: .top, spacing: 16) {
+                        GmailMessageListView(
+                            messages: appState.recentGmailMessages,
+                            selectedMessageID: $appState.selectedGmailMessageID,
+                            isLoading: appState.isLoadingRecentGmailMessages,
+                            errorMessage: appState.recentGmailMessagesErrorMessage,
+                            loadAction: {
+                                Task {
+                                    await appState.loadRecentGmailMessages()
+                                }
+                            }
+                        )
+                        .frame(width: 300)
+
+                        GmailMessageScanView(
+                            selectedMessage: appState.selectedGmailMessage,
+                            scanResult: appState.selectedGmailMessageScan,
+                            isLoading: appState.isLoadingSelectedGmailMessageScan,
+                            errorMessage: appState.selectedGmailMessageScanErrorMessage,
+                            runScanAction: {
+                                Task {
+                                    await appState.runStaticScanForSelectedGmailMessage()
+                                }
+                            }
+                        )
+                    }
+                }
+
                 HStack(alignment: .top, spacing: 16) {
                     EmailListView(
                         scanResults: appState.scanResults,
@@ -68,6 +119,7 @@ struct DashboardView: View {
         .background(Color(nsColor: .windowBackgroundColor))
         .task {
             await appState.checkBackendHealthIfNeeded()
+            await appState.refreshGmailConnection()
         }
     }
 

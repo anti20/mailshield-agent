@@ -33,12 +33,62 @@ struct BackendClient {
         return try decoder.decode(ScanPreviewResponse.self, from: data)
     }
 
+    func fetchGmailAuthStatus() async throws -> GmailAuthStatusResponse {
+        let url = baseURL.appending(path: "auth/gmail/status")
+        let data = try await fetchData(from: url)
+
+        return try decoder.decode(GmailAuthStatusResponse.self, from: data)
+    }
+
+    func fetchGmailConfigStatus() async throws -> GmailConfigStatusResponse {
+        let url = baseURL.appending(path: "auth/gmail/config-status")
+        let data = try await fetchData(from: url)
+
+        return try decoder.decode(GmailConfigStatusResponse.self, from: data)
+    }
+
+    func fetchGmailProfile() async throws -> GmailProfileResponse {
+        let url = baseURL.appending(path: "auth/gmail/profile")
+        let data = try await fetchData(from: url)
+
+        return try decoder.decode(GmailProfileResponse.self, from: data)
+    }
+
+    func fetchRecentGmailMessages(limit: Int = 10) async throws -> GmailRecentMessagesResponse {
+        var components = URLComponents(
+            url: baseURL.appending(path: "gmail/messages/recent"),
+            resolvingAgainstBaseURL: false
+        )
+        components?.queryItems = [URLQueryItem(name: "limit", value: "\(limit)")]
+
+        guard let url = components?.url else {
+            throw BackendClientError.invalidResponse(statusCode: nil)
+        }
+
+        let data = try await fetchData(from: url)
+        return try decoder.decode(GmailRecentMessagesResponse.self, from: data)
+    }
+
+    func fetchGmailStaticScan(messageId: String) async throws -> GmailStaticScanResponse {
+        let url = baseURL.appending(path: "gmail/messages/\(messageId)/static-scan")
+        let data = try await fetchData(from: url)
+
+        return try decoder.decode(GmailStaticScanResponse.self, from: data)
+    }
+
+    var gmailOAuthStartURL: URL {
+        baseURL.appending(path: "auth/gmail/start")
+    }
+
     private func fetchData(from url: URL) async throws -> Data {
         let (data, response) = try await URLSession.shared.data(from: url)
 
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200..<300).contains(httpResponse.statusCode) else {
-            throw BackendClientError.invalidResponse
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw BackendClientError.invalidResponse(statusCode: nil)
+        }
+
+        guard (200..<300).contains(httpResponse.statusCode) else {
+            throw BackendClientError.invalidResponse(statusCode: httpResponse.statusCode)
         }
 
         return data
@@ -46,9 +96,16 @@ struct BackendClient {
 }
 
 enum BackendClientError: LocalizedError {
-    case invalidResponse
+    case invalidResponse(statusCode: Int?)
 
     var errorDescription: String? {
-        "The backend returned an unexpected response."
+        switch self {
+        case .invalidResponse(let statusCode):
+            if let statusCode {
+                return "The backend returned HTTP \(statusCode)."
+            }
+
+            return "The backend returned an unexpected response."
+        }
     }
 }

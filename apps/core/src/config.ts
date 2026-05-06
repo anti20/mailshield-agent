@@ -2,10 +2,14 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 
-dotenv.config({ quiet: true });
-
 const defaultPort = 3000;
-const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const coreRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+dotenv.config({
+  path: path.join(coreRoot, ".env"),
+  quiet: true
+});
+
+const projectRoot = coreRoot;
 const defaultGoogleRedirectUri = "http://localhost:3000/auth/gmail/callback";
 const defaultGmailScopes = ["https://www.googleapis.com/auth/gmail.readonly"];
 
