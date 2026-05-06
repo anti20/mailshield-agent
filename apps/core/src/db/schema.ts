@@ -49,4 +49,24 @@ export function initializeSchema(database: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_email_scan_results_scanned_at
       ON email_scan_results(scannedAt);
   `);
+
+  addColumnIfMissing(database, "email_scan_results", "keyReasonsJson", "TEXT");
+  addColumnIfMissing(database, "email_scan_results", "recommendedAction", "TEXT");
+  addColumnIfMissing(database, "email_scan_results", "agentStepsJson", "TEXT");
+}
+
+function addColumnIfMissing(
+  database: Database.Database,
+  tableName: string,
+  columnName: string,
+  columnType: string
+): void {
+  const columns = database
+    .prepare(`PRAGMA table_info(${tableName})`)
+    .all() as Array<{ name: string }>;
+  const hasColumn = columns.some((column) => column.name === columnName);
+
+  if (!hasColumn) {
+    database.exec(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${columnType}`);
+  }
 }

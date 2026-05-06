@@ -24,7 +24,8 @@ try {
   const gmailStaticScanService = new GmailStaticScanService(gmailMessageService, scanPipeline);
   const gmailAgentScanService = new GmailAgentScanService(
     config.openai,
-    mcpToolService
+    mcpToolService,
+    scanStore
   );
   scanStore.initialize(mockScanResults);
   gmailTokenStore.initialize();

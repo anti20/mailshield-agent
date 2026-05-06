@@ -8,6 +8,7 @@ import {
 } from "../models/agentScan.js";
 import type { AgentCheck, AgentCheckStatus, RiskLevel } from "../models/scanResult.js";
 import type { McpToolService } from "../mcp/McpToolService.js";
+import type { ScanStore } from "../storage/ScanStore.js";
 
 export type OpenAIConfig = {
   apiKey?: string;
@@ -114,7 +115,8 @@ export class OpenAIRateLimitError extends Error {
 export class GmailAgentScanService {
   constructor(
     private readonly openAIConfig: OpenAIConfig,
-    private readonly mcpToolService: McpToolService
+    private readonly mcpToolService: McpToolService,
+    private readonly scanStore: ScanStore
   ) {}
 
   async scanMessage(messageId: string): Promise<GmailAgentScanResult> {
@@ -205,7 +207,7 @@ export class GmailAgentScanService {
         createAgentCheck(email, "risk-scoring-ai", "AI risk score", riskToStatus(riskScoring.riskLevel), riskScoring.rationale, riskScoring.topFactors.join("; "))
       ];
 
-      return {
+      const result: GmailAgentScanResult = {
         normalizedEmailSummary: summarizeNormalizedEmail(email),
         agentSteps,
         checks,
@@ -217,6 +219,11 @@ export class GmailAgentScanService {
         finalExplanation: explanation.finalSummary,
         limitations: unique(explanation.uncertaintyNotes)
       };
+      this.scanStore.upsertScanResult(
+        toPersistedScanResult(email, result, new Date().toISOString())
+      );
+
+      return result;
     } catch (error) {
       if (isOpenAIRateLimitError(error)) {
         throw new OpenAIRateLimitError();
@@ -343,6 +350,54 @@ export class GmailAgentScanService {
     const result = await run(agent, JSON.stringify(input, null, 2));
     return result.finalOutput as ExplanationOutput;
   }
+}
+
+function toPersistedScanResult(
+  email: NormalizedEmail,
+  result: GmailAgentScanResult,
+  scannedAt: string
+): {
+  id: string;
+  gmailMessageId: string;
+  threadId: string;
+  subject: string;
+  sender: string;
+  receivedAt: string;
+  scannedAt: string;
+  riskLevel: RiskLevel;
+  riskScore: number;
+  summary: string;
+  keyReasons?: string[];
+  recommendedAction?: string;
+  agentSteps?: Array<{
+    id: string;
+    agentName: string;
+    status: "completed" | "limited";
+    summary: string;
+  }>;
+  checks: AgentCheck[];
+} {
+  return {
+    id: `scan_${email.gmailMessageId ?? email.id}`,
+    gmailMessageId: email.gmailMessageId ?? email.id,
+    threadId: email.threadId ?? "",
+    subject: email.subject,
+    sender: email.sender,
+    receivedAt: email.receivedAt,
+    scannedAt,
+    riskLevel: result.finalRiskLevel,
+    riskScore: result.finalRiskScore,
+    summary: result.finalSummary || result.finalExplanation,
+    keyReasons: result.keyReasons,
+    recommendedAction: result.recommendedAction,
+    agentSteps: result.agentSteps.map((step) => ({
+      id: step.id,
+      agentName: step.agentName,
+      status: step.status,
+      summary: step.summary
+    })),
+    checks: result.checks
+  };
 }
 
 function buildCompactEmailInput(email: NormalizedEmail, staticChecks: AgentCheck[]): string {

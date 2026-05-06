@@ -286,9 +286,12 @@ final class AppState: ObservableObject {
         selectedGmailMessageAgentScanErrorMessage = nil
 
         do {
-            selectedGmailMessageAgentScan = try await backendClient.fetchGmailAgentScan(
+            let agentScan = try await backendClient.fetchGmailAgentScan(
                 messageId: selectedGmailMessage.id
             )
+            selectedGmailMessageAgentScan = agentScan
+            await loadMockScans()
+            selectedScanResultID = "scan_\(selectedGmailMessage.id)"
         } catch {
             selectedGmailMessageAgentScanErrorMessage = error.localizedDescription
         }

@@ -22,5 +22,5 @@ MailShield Agent will be built in small commit-friendly steps.
 16. Complete: Load real Gmail messages in macOS app and scan selected message
 17. Complete: Add first OpenAI-powered agent chain for selected Gmail messages
 18. Complete: Local MCP-compatible tool layer for Gmail and scan services
-19. Persist Gmail agent scan results in SQLite
+19. Complete: Persist Gmail agent scan results in SQLite
 20. Notifications

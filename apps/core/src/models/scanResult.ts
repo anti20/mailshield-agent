@@ -22,6 +22,14 @@ export type EmailScanResult = {
   riskLevel: RiskLevel;
   riskScore: number;
   summary: string;
+  keyReasons?: string[];
+  recommendedAction?: string;
+  agentSteps?: Array<{
+    id: string;
+    agentName: string;
+    status: "completed" | "limited";
+    summary: string;
+  }>;
   checks: AgentCheck[];
 };
 

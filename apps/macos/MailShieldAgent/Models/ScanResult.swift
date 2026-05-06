@@ -15,7 +15,17 @@ struct EmailScanResult: Decodable, Identifiable, Equatable {
     let riskLevel: RiskLevel
     let riskScore: Int
     let summary: String
+    let keyReasons: [String]?
+    let recommendedAction: String?
+    let agentSteps: [PersistedAgentStep]?
     let checks: [AgentCheck]
+}
+
+struct PersistedAgentStep: Decodable, Equatable {
+    let id: String
+    let agentName: String
+    let status: String
+    let summary: String
 }
 
 enum RiskLevel: String, Decodable {

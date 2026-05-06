@@ -35,7 +35,7 @@ The current backend skeleton lives in `apps/core`. It is a local TypeScript Node
 - `GET /mcp/tools`: lists local MCP-compatible tools and schemas.
 - `POST /mcp/tools/:name/invoke`: invokes one local MCP-compatible tool.
 
-The scan result model includes per-agent checks. Each check has a `passed`, `warning`, or `failed` status, plus a reason and optional evidence. The backend seeds the current mock scan results into SQLite only when the database is empty. Gmail OAuth tokens are persisted locally, recent Gmail message metadata can be fetched, one Gmail message can be converted into `NormalizedEmail`, one Gmail message can be scanned with deterministic static checks, and one Gmail message can be scanned with the OpenAI-powered agent chain. Scan results for this Gmail flow are not persisted yet. A local MCP-compatible layer now wraps existing Gmail and scan services for tool-style access.
+The scan result model includes per-agent checks. Each check has a `passed`, `warning`, or `failed` status, plus a reason and optional evidence. The backend seeds the current mock scan results into SQLite only when the database is empty. Gmail OAuth tokens are persisted locally, recent Gmail message metadata can be fetched, one Gmail message can be converted into `NormalizedEmail`, one Gmail message can be scanned with deterministic static checks, and one Gmail message can be scanned with the OpenAI-powered agent chain. Successful AI agent scans are persisted locally to SQLite history, with practical upsert-by-Gmail-message behavior. A local MCP-compatible layer now wraps existing Gmail and scan services for tool-style access.
 
 ## Current Gmail OAuth Preparation
 
@@ -189,7 +189,7 @@ GmailAgentScanService
        combined agent scan result
 ```
 
-Each step returns structured data. The combined result includes normalized email summary, `agentSteps[]`, combined checks, final risk level, final risk score, and compact user-facing fields (`finalSummary`, `keyReasons[]`, `recommendedAction`) plus uncertainty notes when needed. The workflow reuses the existing Gmail normalization flow and `StaticThreatAgent` baseline through the local MCP-compatible tool layer (`gmail.getNormalizedMessage` and `scan.runStaticThreatScan`). To reduce token usage, LLM steps receive a compact email input (short body excerpt, HTML-derived risk summary, capped links/attachments summary, and static-check summary) instead of full raw HTML/body payloads. It does not persist agent scan results yet, does not download attachment contents, does not expose raw Gmail API responses, does not log or return Gmail tokens, and does not log or return OpenAI API keys.
+Each step returns structured data. The combined result includes normalized email summary, `agentSteps[]`, combined checks, final risk level, final risk score, and compact user-facing fields (`finalSummary`, `keyReasons[]`, `recommendedAction`) plus uncertainty notes when needed. The workflow reuses the existing Gmail normalization flow and `StaticThreatAgent` baseline through the local MCP-compatible tool layer (`gmail.getNormalizedMessage` and `scan.runStaticThreatScan`). To reduce token usage, LLM steps receive a compact email input (short body excerpt, HTML-derived risk summary, capped links/attachments summary, and static-check summary) instead of full raw HTML/body payloads. Successful scans are persisted to local SQLite history. The flow does not download attachment contents, does not expose raw Gmail API responses, does not log or return Gmail tokens, and does not log or return OpenAI API keys.
 
 If OpenAI rate limits are reached, the route returns HTTP `429` with a clear message for the macOS app.
 
@@ -335,6 +335,6 @@ Local TypeScript/Express backend
 
 ## Notes
 
-Gmail OAuth token persistence, profile testing, recent message metadata fetching, one-message `NormalizedEmail` conversion, one-message deterministic static scanning, OpenAI-powered agent scanning, local MCP-compatible tool wrapping, and macOS selected-message scan UI are implemented. Persisted Gmail scan history will be added in a later step, and notifications remain a later step. Mock scan results are persisted locally after seeding, but Static Threat Agent preview results, Gmail static scan results, and Gmail agent scan results are not persisted.
+Gmail OAuth token persistence, profile testing, recent message metadata fetching, one-message `NormalizedEmail` conversion, one-message deterministic static scanning, OpenAI-powered agent scanning, local MCP-compatible tool wrapping, macOS selected-message scan UI, and persisted AI scan history are implemented. Notifications and background polling remain later steps. Mock scan results are persisted locally after seeding, static preview results are not persisted, Gmail static scan results are not persisted, and successful Gmail AI scan results are persisted locally.
 The backend currently supports one local connected Gmail account for development. Multi-account support is planned for a later step.
 A future hosted OAuth broker could remove local client-secret setup from the local MVP.
