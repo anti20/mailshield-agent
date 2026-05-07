@@ -1,34 +1,28 @@
 # Product Positioning
 
-## What MailShield Agent Does
+MailShield Agent is a native macOS menu bar app that helps users review Gmail threats without leaving desktop context.
 
-MailShield Agent is planned as a local-first macOS assistant for monitoring Gmail messages for suspicious content. It will help surface risky email, summarize why a message looks suspicious, and keep a local history of scan results.
+## What it does today
 
-## How It Is Planned To Work
+- Connects one Gmail account through OAuth
+- Loads recent Gmail message metadata
+- Runs deterministic static threat checks on a selected message
+- Runs OpenAI agent chaining on a selected message
+- Shows explainable checks with risk level, score, reasons, and recommended action
+- Stores successful AI scan history locally in SQLite
 
-The app starts as a native macOS menu bar client connected to a local TypeScript Node backend. The current backend uses Express, runs locally on port `3000`, exposes `GET /health` to verify that the core service is running, and exposes `GET /scan-results` with SQLite-backed mock email scan result data.
+## Why it is different
 
-The macOS app can now demonstrate the planned explainable threat review UI with mock data. It loads scan results, shows risk level and score, and displays per-agent checks as `passed`, `warning`, or `failed`. The backend now has a local-first persistence foundation using SQLite at `apps/core/data/mailshield.sqlite`.
+- Native macOS workflow, not a browser-only dashboard
+- Gmail-connected review flow built around explainable security checks
+- Combines deterministic checks + LLM reasoning instead of only one opaque score
+- MCP-compatible local tool layer for controlled extension paths
+- Local-first history (SQLite) rather than requiring cloud storage
 
-MailShield Agent differs by emphasizing explainable per-agent checks instead of only a single opaque risk label. The app now demonstrates visible per-check explainability for deterministic local checks from the rule-based Static Threat Agent, including passed, warning, and failed outcomes with reasons and evidence. That is a concrete differentiator from black-box phishing warnings.
+## Current limitations (intentional)
 
-The backend now connects to Gmail, runs deterministic scan workflows, and can run the first OpenAI-powered agent chain for one selected Gmail message. A later backend will expose controlled actions through MCP and store agent scan history locally.
+- No background polling or automatic inbox monitoring
+- No macOS notifications yet
+- No GitHub/Jira/Teams integrations yet
+- Local development currently supports one connected Gmail account
 
-Gmail is the first planned real mailbox provider. The backend now has real Gmail metadata access: readonly OAuth, local development token persistence, a Gmail profile test endpoint, recent message metadata fetching, selected-message static scanning, and selected-message AI agent scanning.
-
-## Planned Extensions
-
-- Gmail message list and detail views
-- Local scan history
-- Threat analysis agents
-- Controlled MCP tool layer
-- User notifications for risky email
-- Additional email providers after the Gmail MVP
-
-## How It Differs From Similar Apps Or Tools
-
-MailShield Agent is intended to combine a focused macOS menu bar experience with local-first scan history and agent-based analysis. Unlike general email clients, the product is centered on threat monitoring and explanation. Unlike cloud-only scanning tools, the planned architecture keeps the desktop client and local backend as first-class parts of the workflow.
-
-## Current Limitation
-
-The current app is still an early local workflow. The backend returns mock scan result data from SQLite, and the macOS app displays those results through `URLSession` calls to `GET /scan-results`. The macOS app also calls `GET /scan-preview` to show deterministic checks against mock normalized emails. Gmail account connection, recent metadata access, selected-message static scanning, and selected-message OpenAI agent scanning can be tested. Agent scan results are not persisted yet. MCP integration and notifications do not exist yet.
