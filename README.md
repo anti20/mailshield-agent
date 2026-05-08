@@ -1,3 +1,4 @@
+
 # MailShield Agent
 
 MailShield Agent is a local-first macOS menu bar app for Gmail threat review. It combines deterministic security checks with an OpenAI agent workflow and keeps scan history in local SQLite.
@@ -41,3 +42,5 @@ Then fill `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `OPENAI_API_KEY` (`OPE
 - [Architecture](docs/architecture.md)
 - [Setup](docs/setup.md)
 - [Product Positioning](docs/product-positioning.md)
+
+<img width="762" height="925" alt="Screenshot 2026-05-07 at 17 47 42" src="https://github.com/user-attachments/assets/4f3c3001-0ee8-469d-a4c0-50f8a1dda00a" />
